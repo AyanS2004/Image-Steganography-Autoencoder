@@ -1,0 +1,22 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 5000,
+    "debug": false
+  },
+  "model": {
+    "checkpoint_path": "checkpoints/best_model.pth",
+    "device": "cuda",
+    "image_size": 128
+  },
+  "upload": {
+    "max_file_size": "16MB",
+    "allowed_extensions": [
+      "png",
+      "jpg",
+      "jpeg",
+      "bmp",
+      "tiff"
+    ]
+  }
+}
