@@ -382,14 +382,14 @@ Key parameters to experiment with:
 
 This comprehensive implementation enables research in:
 
-1. **🎬 Video Steganography**: Frame-by-frame processing with temporal consistency
-2. **🛡️ Adversarial Steganography**: Robust hiding against detection algorithms
-3. **📱 Mobile Steganography**: Lightweight models for real-time mobile applications
-4. **🔄 Multi-Modal Hiding**: Embedding different types of data (text, audio, video)
-5. **🎯 Adaptive Steganography**: Dynamic adjustment based on content analysis
-6. **🌐 Distributed Systems**: Scalable deployment across multiple machines
+1. **Video Steganography**: Frame-by-frame processing with temporal consistency
+2. **Adversarial Steganography**: Robust hiding against detection algorithms
+3. **Mobile Steganography**: Lightweight models for real-time mobile applications
+4. **Multi-Modal Hiding**: Embedding different types of data (text, audio, video)
+5. **Adaptive Steganography**: Dynamic adjustment based on content analysis
+6. **Distributed Systems**: Scalable deployment across multiple machines
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our contribution guidelines:
 
@@ -410,53 +410,3 @@ python -m pytest tests/
 flake8 *.py
 black *.py --check
 ```
-
-### Contribution Areas
-- 🐛 **Bug Reports**: Issues with reproducible steps
-- 💡 **Feature Requests**: New functionality ideas
-- 📝 **Documentation**: Improvements to guides and examples
-- 🧪 **Testing**: Unit tests and integration tests
-- 🎨 **UI/UX**: Web interface enhancements
-- ⚡ **Performance**: Optimization improvements
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-**For Educational and Research Use**: This implementation is designed for academic research and educational purposes. Please ensure compliance with your local laws and institutional policies when using steganography techniques.
-
-## 📚 Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@software{digital_watermarking_system,
-  title={Advanced Digital Watermarking System with Deep Learning},
-  author={Digital Watermarking Project Contributors},
-  year={2024},
-  url={https://github.com/yourusername/DigitalWatermarking},
-  note={Comprehensive steganography implementation with multiple model variants}
-}
-```
-
-## 🙏 Acknowledgments
-
-- **PyTorch Team**: For the exceptional deep learning framework
-- **OpenCV Contributors**: For computer vision utilities
-- **Flask Community**: For the web framework
-- **Research Community**: For foundational steganography techniques
-- **CIFAR-10 Creators**: For the benchmark dataset
-- **Open Source Community**: For inspiration and best practices
-
-## 🎉 Getting Started
-
-Ready to dive in? Choose your path:
-
-1. **🚀 Quick Demo**: `python demo.py --mode both`
-2. **🌐 Web Interface**: `python web_app.py`  
-3. **🏋️ Training**: `python train.py --use_cifar --epochs 50`
-4. **📊 Evaluation**: `python evaluate.py --checkpoint checkpoints/best_model.pth`
-5. **🔄 Batch Processing**: `python batch_process.py --mode embed`
-
-Happy experimenting with digital watermarking! 🎭✨
-
