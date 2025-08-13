@@ -2,35 +2,35 @@
 
 A comprehensive, production-ready implementation of image-in-image steganography using advanced Convolutional Autoencoders. This project provides multiple model variants, optimization techniques, and deployment options for digital watermarking applications.
 
-## 🌟 Project Overview
+## Project Overview
 
 This advanced implementation uses state-of-the-art deep learning techniques to perform robust image-in-image steganography:
 
-- **🔧 Encoder Network**: Embeds secret images into cover images with minimal visual distortion
-- **🔍 Decoder Network**: Extracts hidden secret images from stego images with high fidelity
-- **🎯 Advanced Training**: Multi-objective optimization with perceptual loss functions
-- **🚀 Multiple Deployment Options**: From research prototypes to production web applications
+- ** Encoder Network**: Embeds secret images into cover images with minimal visual distortion
+- ** Decoder Network**: Extracts hidden secret images from stego images with high fidelity
+- ** Advanced Training**: Multi-objective optimization with perceptual loss functions
+- ** Multiple Deployment Options**: From research prototypes to production web applications
 
-## ✨ Key Features
+##  Key Features
 
 ### Core Capabilities
-- **🏗️ Multiple Model Architectures**: Lightweight, standard, high-capacity, and robust variants
-- **🔬 Advanced Loss Functions**: MSE, SSIM, perceptual, and adversarial losses
-- **📊 Comprehensive Evaluation**: Robustness testing against common attacks (JPEG, noise, blur, etc.)
-- **⚡ Performance Optimization**: Mixed precision training, gradient clipping, advanced schedulers
-- **🎭 Interactive Demo**: Real-time demonstration with synthetic and custom images
+- ** Multiple Model Architectures**: Lightweight, standard, high-capacity, and robust variants
+- ** Advanced Loss Functions**: MSE, SSIM, perceptual, and adversarial losses
+- ** Comprehensive Evaluation**: Robustness testing against common attacks (JPEG, noise, blur, etc.)
+- ** Performance Optimization**: Mixed precision training, gradient clipping, advanced schedulers
+- ** Interactive Demo**: Real-time demonstration with synthetic and custom images
 
 ### User Interfaces
-- **🌐 Web Application**: Beautiful, responsive web interface for easy usage
-- **📱 RESTful API**: Programmatic access for integration with other systems
-- **🖥️ Command Line Tools**: Comprehensive CLI for batch processing and automation
-- **📊 Visualization Suite**: Advanced plotting and analysis tools
+- ** Web Application**: Beautiful, responsive web interface for easy usage
+- ** RESTful API**: Programmatic access for integration with other systems
+- ** Command Line Tools**: Comprehensive CLI for batch processing and automation
+- ** Visualization Suite**: Advanced plotting and analysis tools
 
 ### Deployment & Production
-- **🔄 Batch Processing**: Handle multiple images with parallel processing
-- **📈 Model Monitoring**: Training metrics, validation curves, and performance tracking
-- **🎨 Custom Datasets**: Support for any image dataset with flexible preprocessing
-- **🔒 Robustness Testing**: Evaluation against compression, noise, geometric attacks
+- ** Batch Processing**: Handle multiple images with parallel processing
+- ** Model Monitoring**: Training metrics, validation curves, and performance tracking
+- ** Custom Datasets**: Support for any image dataset with flexible preprocessing
+- ** Robustness Testing**: Evaluation against compression, noise, geometric attacks
 
 ## Architecture
 
@@ -51,7 +51,7 @@ This advanced implementation uses state-of-the-art deep learning techniques to p
    - Secret Loss: MSE between original and recovered secret images
    - SSIM Loss: Structural similarity for better visual quality
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Automated Setup
 ```bash
@@ -90,7 +90,7 @@ python setup.py
    python demo.py --mode inference --epochs 5
    ```
 
-### 🎭 Instant Demo
+### Instant Demo
 ```bash
 # Quick demonstration with synthetic images
 python demo.py --mode both --epochs 10 --image_size 64
@@ -99,9 +99,9 @@ python demo.py --mode both --epochs 10 --image_size 64
 python web_app.py
 ```
 
-## 📚 Usage Guide
+##  Usage Guide
 
-### 🎯 1. Training Models
+###  1. Training Models
 
 #### Basic Training (CIFAR-10)
 ```bash
@@ -135,7 +135,7 @@ print(f'Parameters: {sum(p.numel() for p in model.parameters()):,}')
 "
 ```
 
-### 🔍 2. Inference & Testing
+###  2. Inference & Testing
 
 #### Single Image Processing
 ```bash
@@ -161,7 +161,7 @@ python batch_process.py --mode extract \
   --stego_dir stegos/ --output_dir extracted/
 ```
 
-### 🌐 3. Web Interface
+###  3. Web Interface
 
 #### Launch Web App
 ```bash
@@ -174,13 +174,13 @@ python web_app.py --host 0.0.0.0 --port 8080 \
 ```
 
 #### Web Features
-- **📤 Upload Interface**: Drag-and-drop image upload
-- **⚙️ Real-time Processing**: Instant steganography results
-- **📊 Quality Metrics**: PSNR and SSIM calculations
-- **💾 Download Results**: High-quality output images
-- **📱 Responsive Design**: Works on desktop and mobile
+- ** Upload Interface**: Drag-and-drop image upload
+- ** Real-time Processing**: Instant steganography results
+- ** Quality Metrics**: PSNR and SSIM calculations
+- ** Download Results**: High-quality output images
+- ** Responsive Design**: Works on desktop and mobile
 
-### 📊 4. Evaluation & Analysis
+###  4. Evaluation & Analysis
 
 #### Comprehensive Evaluation
 ```bash
@@ -205,39 +205,39 @@ compare_model_sizes()
 "
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 DigitalWatermarking/
-├── 🏗️ Core Models
+├──  Core Models
 │   ├── models.py              # Base autoencoder architectures
 │   ├── model_variants.py      # Lightweight, robust, high-capacity variants
 │   └── optimization.py        # Advanced training techniques
 │
-├── 📊 Data & Training  
+├──  Data & Training  
 │   ├── dataset.py             # Data loading and preprocessing
 │   ├── trainer.py             # Basic training loop
 │   ├── train.py              # Main training script
 │   └── config.json           # Training configuration
 │
-├── 🔍 Inference & Testing
+├──  Inference & Testing
 │   ├── inference.py          # Single image processing
 │   ├── batch_process.py      # Batch operations
 │   ├── evaluate.py           # Comprehensive evaluation
 │   └── demo.py               # Interactive demonstration
 │
-├── 🌐 Web Interface
+├──  Web Interface
 │   ├── web_app.py            # Flask web application
 │   ├── web_config.json       # Web app configuration
 │   └── templates/            # HTML templates
 │
-├── 🚀 Deployment
+├──  Deployment
 │   ├── setup.py              # Automated setup script
 │   ├── requirements.txt      # Python dependencies
 │   ├── QUICKSTART.md         # Quick start guide
 │   └── README.md             # This comprehensive guide
 │
-└── 📂 Generated Directories
+└──  Generated Directories
     ├── checkpoints/          # Model checkpoints
     ├── visualizations/       # Training plots
     ├── results/             # Inference outputs
@@ -345,40 +345,40 @@ Key parameters to experiment with:
 - Monitor loss curves during training
 - Use appropriate batch size for your hardware
 
-## 🎯 Advanced Features
+##  Advanced Features
 
-### 🏗️ Model Variants
+###  Model Variants
 - **Lightweight Models**: Optimized for mobile/edge deployment with depthwise separable convolutions
 - **High-Capacity Models**: Enhanced architecture with attention mechanisms for complex images
 - **Robust Models**: Noise-resistant training with dropout and augmentation for attack resilience
 - **Adaptive Models**: Dynamic switching between different operating modes
 
-### ⚡ Optimization Techniques
+###  Optimization Techniques
 - **Mixed Precision Training**: Up to 2x speedup with automatic loss scaling
 - **Advanced Optimizers**: AdamW with parameter group scheduling
 - **Learning Rate Scheduling**: Cosine annealing and plateau reduction
 - **Gradient Clipping**: Stable training with gradient norm constraints
 - **Early Stopping**: Automatic training termination with patience monitoring
 
-### 🔒 Robustness Features
+###  Robustness Features
 - **Attack Simulation**: JPEG compression, Gaussian noise, blur, rotation, scaling
 - **Quality Metrics**: PSNR, SSIM, perceptual similarity measurements
 - **Batch Evaluation**: Automated testing across multiple attack scenarios
 - **Performance Benchmarking**: Comprehensive model comparison tools
 
-### 🌐 Production Deployment
+###  Production Deployment
 - **Web Interface**: Professional Flask application with responsive design
 - **RESTful API**: Programmatic access for system integration
 - **Batch Processing**: Parallel processing for high-throughput scenarios
 - **Configuration Management**: JSON-based configuration for different environments
 
-### 📊 Analysis & Monitoring
+###  Analysis & Monitoring
 - **Training Visualization**: Real-time loss curves and metric tracking
 - **Model Profiling**: Parameter counting and memory usage analysis
 - **Quality Assessment**: Automated image quality evaluation
 - **Performance Logging**: Comprehensive training history and checkpointing
 
-## 🔬 Research Applications
+##  Research Applications
 
 This comprehensive implementation enables research in:
 
