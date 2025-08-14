@@ -1,1 +1,26 @@
-Learn more about New+ by visiting https://aka.ms/PowerToysOverview_NewPlus
+# Ignore datasets (don’t put in Git at all)
+data/
+*.tar.gz
+*.zip
+
+# Ignore training outputs and logs
+*.log
+*.tmp
+*.out
+*.csv
+*.json
+
+# Ignore checkpoint duplicates not meant for LFS
+checkpoints/
+runs/
+cuda_safe_results/*.txt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+env/
