@@ -309,6 +309,8 @@
             <div class="tabs">
                 <button class="tab active" onclick="showTab('embed')">Embed Secret</button>
                 <button class="tab" onclick="showTab('extract')">Extract Secret</button>
+                <button class="tab" onclick="showTab('results')">Results</button>
+                <button class="tab" onclick="showTab('checkpoints')">Checkpoints</button>
                 <button class="tab" onclick="showTab('info')">Information</button>
             </div>
             
@@ -422,6 +424,27 @@
                     <p>Loading model information...</p>
                 </div>
             </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content">
+                <div class="info-section">
+                    <h3>Artifacts Browser</h3>
+                    <p>Browse generated outputs from recent runs, evaluations, and optimizations.</p>
+                </div>
+                <div id="results-container" class="results"></div>
+            </div>
+
+            <!-- Checkpoints Tab -->
+            <div id="checkpoints-tab" class="tab-content">
+                <div class="info-section">
+                    <h3>Available Checkpoints</h3>
+                    <p>Switch between standard and CUDA-safe checkpoints without restarting the server.</p>
+                    <div id="current-checkpoint" style="margin-top:8px;"></div>
+                </div>
+                <div class="results">
+                    <div id="checkpoints-container"></div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -439,6 +462,12 @@
             // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
+
+            if (tabName === 'results') {
+                loadArtifacts();
+            } else if (tabName === 'checkpoints') {
+                loadCheckpoints();
+            }
         }
         
         // File input handlers
@@ -626,6 +655,99 @@
             .catch(error => {
                 document.getElementById('model-info').innerHTML = '<h3>Model Information</h3><p>Could not load model information.</p>';
             });
+
+        function loadArtifacts() {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading artifacts...</p></div>';
+            fetch('/artifacts')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error('Failed to fetch artifacts');
+                    const groups = data.artifacts;
+                    const order = ['web_results', 'results', 'cuda_safe_results', 'evaluation_results', 'optimized_results'];
+                    const titles = {
+                        web_results: 'Web Results',
+                        results: 'Results',
+                        cuda_safe_results: 'CUDA-Safe Results',
+                        evaluation_results: 'Evaluation Results',
+                        optimized_results: 'Optimized Results'
+                    };
+                    let html = '';
+                    order.forEach(key => {
+                        const items = groups[key] || [];
+                        html += `<div class="info-section"><h3>${titles[key]}</h3>`;
+                        if (items.length === 0) {
+                            html += '<p>No files found.</p></div>';
+                            return;
+                        }
+                        html += '<div class="image-grid">';
+                        items.slice(0, 24).forEach(item => {
+                            const name = item.name;
+                            const url = `/artifact/${key}/${encodeURIComponent(name)}`;
+                            html += `
+                                <div class="image-card">
+                                    <h3 title="${name}">${name.length > 28 ? name.slice(0,25)+'…' : name}</h3>
+                                    <a class="download-btn" href="${url}" download>Download</a>
+                                </div>`;
+                        });
+                        html += '</div></div>';
+                    });
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    container.innerHTML = '<div class="error">'+err.message+'</div>';
+                });
+        }
+
+        function loadCheckpoints() {
+            const container = document.getElementById('checkpoints-container');
+            const currentEl = document.getElementById('current-checkpoint');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading checkpoints...</p></div>';
+            fetch('/checkpoints')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error('Failed to fetch checkpoints');
+                    currentEl.innerHTML = `<strong>Active:</strong> ${data.current || 'None'}`;
+                    function renderList(title, list) {
+                        let html = `<div class="info-section"><h3>${title}</h3>`;
+                        if (!list || list.length === 0) {
+                            html += '<p>No checkpoints found.</p></div>';
+                            return html;
+                        }
+                        html += '<div class="image-grid">';
+                        list.slice(0, 24).forEach(item => {
+                            html += `
+                                <div class="image-card">
+                                    <h3 title="${item.name}">${item.name.length > 28 ? item.name.slice(0,25)+'…' : item.name}</h3>
+                                    <p style="margin:8px 0; color:#666; font-size:0.9em;">${(item.size_bytes/1048576).toFixed(2)} MB</p>
+                                    <button class="process-btn" ${item.active ? 'disabled' : ''} onclick="switchCheckpoint('${item.relative_path.replace(/'/g, "%27")}')">${item.active ? 'Active' : 'Activate'}</button>
+                                </div>`;
+                        });
+                        html += '</div></div>';
+                        return html;
+                    }
+                    container.innerHTML =
+                        renderList('Standard Checkpoints', data.checkpoints) +
+                        renderList('CUDA-Safe Checkpoints', data.cuda_safe_checkpoints);
+                })
+                .catch(err => {
+                    container.innerHTML = '<div class="error">'+err.message+'</div>';
+                });
+        }
+
+        function switchCheckpoint(path) {
+            fetch('/switch_checkpoint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path })
+            }).then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.error || 'Switch failed');
+                loadCheckpoints();
+            }).catch(err => {
+                alert('Error: ' + err.message);
+            });
+        }
     </script>
 </body>
 </html>

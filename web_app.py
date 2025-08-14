@@ -28,14 +28,25 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 # Configuration
 UPLOAD_FOLDER = 'web_uploads'
 RESULTS_FOLDER = 'web_results'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
+# Additional artifact directories
+CUDA_SAFE_RESULTS_FOLDER = 'cuda_safe_results'
+EVAL_RESULTS_FOLDER = 'evaluation_results'
+OPTIMIZED_RESULTS_FOLDER = 'optimized_results'
+CHECKPOINTS_FOLDER = 'checkpoints'
+CUDA_SAFE_CHECKPOINTS_FOLDER = 'cuda_safe_checkpoints'
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif', 'webp'}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
+os.makedirs(CUDA_SAFE_RESULTS_FOLDER, exist_ok=True)
+os.makedirs(EVAL_RESULTS_FOLDER, exist_ok=True)
+os.makedirs(OPTIMIZED_RESULTS_FOLDER, exist_ok=True)
 
 # Global model variable
 model = None
 device = None
+current_checkpoint_path = None
 
 
 def allowed_file(filename):
@@ -64,6 +75,8 @@ def load_model(checkpoint_path, device_type='cuda'):
     model.to(device)
     model.eval()
     print(f"Model running on {device}")
+    global current_checkpoint_path
+    current_checkpoint_path = checkpoint_path
 
 
 def preprocess_image(image_path, image_size=128):
@@ -280,6 +293,128 @@ def download_file(filename):
         return "File not found", 404
 
 
+def _list_dir_safe(base_dir, allowed_ext=None):
+    entries = []
+    if not os.path.exists(base_dir):
+        return entries
+    for name in os.listdir(base_dir):
+        path = os.path.join(base_dir, name)
+        if not os.path.isfile(path):
+            continue
+        ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+        if allowed_ext and ext not in allowed_ext:
+            continue
+        stat = os.stat(path)
+        entries.append({
+            'name': name,
+            'size_bytes': stat.st_size,
+            'modified': datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        })
+    # Sort by modified desc
+    entries.sort(key=lambda x: x['modified'], reverse=True)
+    return entries
+
+
+@app.route('/artifacts')
+def list_artifacts():
+    """List artifacts across results and reports directories."""
+    any_ext = None
+    data = {
+        'web_results': _list_dir_safe(RESULTS_FOLDER, any_ext),
+        'results': _list_dir_safe('results', any_ext),
+        'cuda_safe_results': _list_dir_safe(CUDA_SAFE_RESULTS_FOLDER, any_ext),
+        'evaluation_results': _list_dir_safe(EVAL_RESULTS_FOLDER, any_ext),
+        'optimized_results': _list_dir_safe(OPTIMIZED_RESULTS_FOLDER, any_ext),
+    }
+    # Attach URLs for downloading/serving
+    def attach_urls(folder_key, base_dir):
+        for item in data[folder_key]:
+            item['url'] = url_for('serve_artifact', folder=folder_key, filename=item['name'])
+    attach_urls('web_results', RESULTS_FOLDER)
+    attach_urls('results', 'results')
+    attach_urls('cuda_safe_results', CUDA_SAFE_RESULTS_FOLDER)
+    attach_urls('evaluation_results', EVAL_RESULTS_FOLDER)
+    attach_urls('optimized_results', OPTIMIZED_RESULTS_FOLDER)
+    return jsonify({'success': True, 'artifacts': data})
+
+
+FOLDER_MAP = {
+    'web_results': RESULTS_FOLDER,
+    'results': 'results',
+    'cuda_safe_results': CUDA_SAFE_RESULTS_FOLDER,
+    'evaluation_results': EVAL_RESULTS_FOLDER,
+    'optimized_results': OPTIMIZED_RESULTS_FOLDER,
+}
+
+
+@app.route('/artifact/<folder>/<path:filename>')
+def serve_artifact(folder, filename):
+    """Serve artifacts from whitelisted folders."""
+    if folder not in FOLDER_MAP:
+        return "Invalid folder", 400
+    base_dir = FOLDER_MAP[folder]
+    base_abs = os.path.abspath(base_dir)
+    safe_path_abs = os.path.abspath(os.path.join(base_dir, filename))
+    try:
+        common = os.path.commonpath([safe_path_abs, base_abs])
+    except Exception:
+        return "Invalid path", 400
+    if common != base_abs:
+        return "Invalid path", 400
+    if not os.path.exists(safe_path_abs):
+        return "File not found", 404
+    return send_file(safe_path_abs, as_attachment=True)
+
+
+@app.route('/checkpoints', methods=['GET'])
+def list_checkpoints():
+    """List available checkpoints including CUDA-safe ones."""
+    def collect(dir_path):
+        files = []
+        if os.path.exists(dir_path):
+            for name in os.listdir(dir_path):
+                if not name.lower().endswith('.pth'):
+                    continue
+                path = os.path.join(dir_path, name)
+                if os.path.isfile(path):
+                    files.append({
+                        'name': name,
+                        'relative_path': os.path.join(dir_path, name).replace('\\', '/'),
+                        'modified': datetime.fromtimestamp(os.stat(path).st_mtime).isoformat(),
+                        'size_bytes': os.stat(path).st_size,
+                        'active': (current_checkpoint_path == os.path.join(dir_path, name))
+                    })
+        files.sort(key=lambda x: x['modified'], reverse=True)
+        return files
+    return jsonify({
+        'success': True,
+        'current': current_checkpoint_path,
+        'checkpoints': collect(CHECKPOINTS_FOLDER),
+        'cuda_safe_checkpoints': collect(CUDA_SAFE_CHECKPOINTS_FOLDER)
+    })
+
+
+@app.route('/switch_checkpoint', methods=['POST'])
+def switch_checkpoint():
+    """Switch the active checkpoint and reload the model."""
+    try:
+        data = request.get_json(force=True)
+        rel_path = data.get('path')
+        if not rel_path:
+            return jsonify({'success': False, 'error': 'Missing path'}), 400
+        # Restrict to allowed base dirs
+        allowed_bases = [CHECKPOINTS_FOLDER, CUDA_SAFE_CHECKPOINTS_FOLDER]
+        if not any(rel_path.startswith(base) for base in allowed_bases):
+            return jsonify({'success': False, 'error': 'Path not allowed'}), 400
+        abs_path = os.path.abspath(rel_path)
+        if not os.path.exists(abs_path):
+            return jsonify({'success': False, 'error': 'Checkpoint not found'}), 404
+        load_model(abs_path, str(device) if device is not None else 'cuda')
+        return jsonify({'success': True, 'current': current_checkpoint_path})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/model_info')
 def model_info():
     """Get model information"""
@@ -306,6 +441,10 @@ def create_templates():
     """Create HTML templates if they don't exist"""
     templates_dir = 'templates'
     os.makedirs(templates_dir, exist_ok=True)
+    # If a custom template already exists, do not overwrite
+    existing = os.path.join(templates_dir, 'index.html')
+    if os.path.exists(existing):
+        return "Templates exist. Not overwritten."
     
     # Create index.html template
     index_html = """<!DOCTYPE html>

@@ -174,11 +174,36 @@ python web_app.py --host 0.0.0.0 --port 8080 \
 ```
 
 #### Web Features
-- ** Upload Interface**: Drag-and-drop image upload
-- ** Real-time Processing**: Instant steganography results
-- ** Quality Metrics**: PSNR and SSIM calculations
-- ** Download Results**: High-quality output images
-- ** Responsive Design**: Works on desktop and mobile
+- **Sleek dark UI**: Modern, responsive design with polished cards and subtle gradients
+- **Drag-and-drop uploads**: Drop files directly, with inline thumbnail previews
+- **Live metrics**: PSNR/SSIM displayed in compact, readable metric cards
+- **Downloads built-in**: One-click stego and recovered image downloads
+- **Artifacts Browser**: Results tab lists `web_results/`, `results/`, `cuda_safe_results/`, `evaluation_results/`, and `optimized_results` with direct downloads
+- **Checkpoint Manager**: Checkpoints tab lists `checkpoints/` and `cuda_safe_checkpoints/` and lets you activate a checkpoint without restarting
+- **Device/params pill**: Shows device (CPU/GPU) and parameter counts
+- **Mobile friendly**: Responsive grid and large touch targets
+
+#### Switch to CUDA-safe checkpoint at runtime
+1. Open the web UI and go to the Checkpoints tab
+2. Pick a checkpoint under CUDA-Safe Checkpoints and click Activate
+3. The model reloads with the selected weights
+
+API example:
+```bash
+curl -X POST http://127.0.0.1:5000/switch_checkpoint \
+  -H "Content-Type: application/json" \
+  -d '{"path": "cuda_safe_checkpoints/your_checkpoint.pth"}'
+```
+
+#### Browse generated artifacts
+The Results tab calls `/artifacts` to list files across:
+- `web_results/`
+- `results/`
+- `cuda_safe_results/`
+- `evaluation_results/`
+- `optimized_results/`
+
+Each entry includes a direct download link.
 
 ###  4. Evaluation & Analysis
 
@@ -238,11 +263,13 @@ DigitalWatermarking/
 │   └── README.md             # This comprehensive guide
 │
 └──  Generated Directories
-    ├── checkpoints/          # Model checkpoints
+    ├── checkpoints/          # Model checkpoints (standard)
+    ├── cuda_safe_checkpoints/# CUDA-safe checkpoints
     ├── visualizations/       # Training plots
-    ├── results/             # Inference outputs
-    ├── evaluation_results/   # Evaluation reports
-    ├── optimized_results/    # Optimization results
+    ├── results/              # Inference outputs
+    ├── cuda_safe_results/    # CUDA-safe inference outputs
+    ├── evaluation_results/   # Evaluation reports (metrics, CSV/JSON)
+    ├── optimized_results/    # Optimization results and artifacts
     ├── web_uploads/         # Web app uploads
     ├── web_results/         # Web app outputs
     └── sample_images/       # Demo images
