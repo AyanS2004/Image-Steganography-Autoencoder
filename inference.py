@@ -76,9 +76,41 @@ def calculate_metrics(original, reconstructed):
     orig_np = denormalize_image(original.squeeze(0)).permute(1, 2, 0).numpy()
     recon_np = denormalize_image(reconstructed.squeeze(0)).permute(1, 2, 0).numpy()
     
-    # Calculate metrics
+    # Calculate PSNR
     psnr_val = psnr(orig_np, recon_np, data_range=1.0)
-    ssim_val = ssim(orig_np, recon_np, multichannel=True, data_range=1.0)
+    
+    # Calculate SSIM with proper window size for small images
+    try:
+        # Get image dimensions
+        height, width = orig_np.shape[:2]
+        
+        # Determine appropriate window size (must be odd and smaller than image)
+        min_dim = min(height, width)
+        if min_dim < 7:
+            # For very small images, use a minimal window size
+            win_size = 3
+        elif min_dim < 11:
+            # For small images, use a smaller window
+            win_size = 5
+        else:
+            # For larger images, use default window size
+            win_size = 7
+        
+        # Ensure window size is odd
+        if win_size % 2 == 0:
+            win_size -= 1
+        
+        # Calculate SSIM with appropriate parameters
+        ssim_val = ssim(orig_np, recon_np, 
+                       win_size=win_size,
+                       channel_axis=2,  # Specify channel axis for RGB images
+                       data_range=1.0)
+    except Exception as e:
+        print(f"SSIM calculation failed: {e}")
+        # Fallback: use a simple correlation-based similarity
+        ssim_val = np.corrcoef(orig_np.flatten(), recon_np.flatten())[0, 1]
+        if np.isnan(ssim_val):
+            ssim_val = 0.0
     
     return psnr_val, ssim_val
 

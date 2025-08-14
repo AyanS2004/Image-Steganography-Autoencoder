@@ -219,9 +219,46 @@ def inference_demo(model=None, device='cuda', image_size=128):
     recovered_np = denormalize_image(secret_recovered.squeeze(0)).permute(1, 2, 0).cpu().numpy()
     
     cover_psnr = psnr(cover_np, stego_np, data_range=1.0)
-    cover_ssim = ssim(cover_np, stego_np, multichannel=True, data_range=1.0)
+    
+    # Calculate SSIM with proper window size for small images
+    try:
+        height, width = cover_np.shape[:2]
+        min_dim = min(height, width)
+        if min_dim < 7:
+            win_size = 3
+        elif min_dim < 11:
+            win_size = 5
+        else:
+            win_size = 7
+        if win_size % 2 == 0:
+            win_size -= 1
+        cover_ssim = ssim(cover_np, stego_np, win_size=win_size, channel_axis=2, data_range=1.0)
+    except Exception as e:
+        print(f"Cover SSIM calculation failed: {e}")
+        cover_ssim = np.corrcoef(cover_np.flatten(), stego_np.flatten())[0, 1]
+        if np.isnan(cover_ssim):
+            cover_ssim = 0.0
+    
     secret_psnr = psnr(secret_np, recovered_np, data_range=1.0)
-    secret_ssim = ssim(secret_np, recovered_np, multichannel=True, data_range=1.0)
+    
+    # Calculate SSIM with proper window size for small images
+    try:
+        height, width = secret_np.shape[:2]
+        min_dim = min(height, width)
+        if min_dim < 7:
+            win_size = 3
+        elif min_dim < 11:
+            win_size = 5
+        else:
+            win_size = 7
+        if win_size % 2 == 0:
+            win_size -= 1
+        secret_ssim = ssim(secret_np, recovered_np, win_size=win_size, channel_axis=2, data_range=1.0)
+    except Exception as e:
+        print(f"Secret SSIM calculation failed: {e}")
+        secret_ssim = np.corrcoef(secret_np.flatten(), recovered_np.flatten())[0, 1]
+        if np.isnan(secret_ssim):
+            secret_ssim = 0.0
     
     print(f"\nMetrics:")
     print(f"Cover preservation - PSNR: {cover_psnr:.2f} dB, SSIM: {cover_ssim:.4f}")

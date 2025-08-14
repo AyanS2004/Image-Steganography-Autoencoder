@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+"""
+Script to fix the HTML template with all tabs and proper JavaScript functionality.
+"""
+
+import os
+
+def create_complete_template():
+    """Create the complete HTML template with all tabs"""
+    
+    template_content = '''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -307,11 +317,11 @@
         
         <div class="main-content">
             <div class="tabs">
-                <button class="tab active" onclick="showTab('embed', this)">Embed Secret</button>
-                <button class="tab" onclick="showTab('extract', this)">Extract Secret</button>
-                <button class="tab" onclick="showTab('results', this)">Results</button>
-                <button class="tab" onclick="showTab('checkpoints', this)">Checkpoints</button>
-                <button class="tab" onclick="showTab('info', this)">Information</button>
+                <button class="tab active" onclick="showTab('embed')">Embed Secret</button>
+                <button class="tab" onclick="showTab('extract')">Extract Secret</button>
+                <button class="tab" onclick="showTab('results')">Results</button>
+                <button class="tab" onclick="showTab('checkpoints')">Checkpoints</button>
+                <button class="tab" onclick="showTab('info')">Information</button>
             </div>
             
             <!-- Embed Tab -->
@@ -453,7 +463,7 @@
     
     <script>
         // Tab switching function
-        function showTab(tabName, btn) {
+        function showTab(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -464,9 +474,7 @@
             
             // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
-            if (btn && btn.classList) {
-                btn.classList.add('active');
-            }
+            event.target.classList.add('active');
 
             if (tabName === 'results') {
                 loadArtifacts();
@@ -477,22 +485,6 @@
         
         // File input handlers
         document.addEventListener('DOMContentLoaded', function() {
-            // Helper: fetch JSON with timeout and graceful non-JSON handling
-            function fetchJsonWithTimeout(url, options = {}, timeoutMs = 120000) {
-                const controller = new AbortController();
-                const id = setTimeout(() => controller.abort(), timeoutMs);
-                const opts = { ...options, signal: controller.signal };
-                return fetch(url, opts).then(async (response) => {
-                    clearTimeout(id);
-                    const contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('application/json')) {
-                        const text = await response.text().catch(() => '');
-                        const msg = text ? text.slice(0, 500) : `HTTP ${response.status}`;
-                        throw new Error(`Server returned non-JSON response: ${msg}`);
-                    }
-                    return response.json();
-                });
-            }
             const coverInput = document.getElementById('cover-input');
             const secretInput = document.getElementById('secret-input');
             const stegoInput = document.getElementById('stego-input');
@@ -527,21 +519,6 @@
                     const formData = new FormData(this);
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const resultsDiv = document.getElementById('embed-results');
-                    const coverFile = document.getElementById('cover-input').files[0];
-                    const secretFile = document.getElementById('secret-input').files[0];
-                    
-                    // Basic client-side validation to avoid server-side 16MB limit and missing files
-                    if (!coverFile || !secretFile) {
-                        resultsDiv.style.display = 'block';
-                        resultsDiv.innerHTML = '<div class="error">Please select both cover and secret images.</div>';
-                        return;
-                    }
-                    const maxBytes = 15 * 1024 * 1024; // keep under Flask 16MB limit
-                    if (coverFile.size > maxBytes || secretFile.size > maxBytes) {
-                        resultsDiv.style.display = 'block';
-                        resultsDiv.innerHTML = '<div class="error">One or both images exceed the 15MB size limit. Please use smaller images or choose a lower processing size.</div>';
-                        return;
-                    }
                     
                     // Show loading
                     submitBtn.disabled = true;
@@ -549,7 +526,11 @@
                     resultsDiv.style.display = 'block';
                     resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Embedding secret image...</p></div>';
                     
-                    fetchJsonWithTimeout('/upload', { method: 'POST', body: formData }, 120000)
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             displayEmbedResults(data);
@@ -558,9 +539,7 @@
                         }
                     })
                     .catch(error => {
-                        const hint = ' If this keeps happening, try a smaller processing size or check the server logs.';
-                        const msg = (error.name === 'AbortError') ? 'Request timed out.' : ('Network error: ' + error.message);
-                        resultsDiv.innerHTML = '<div class="error">' + msg + hint + '</div>';
+                        resultsDiv.innerHTML = '<div class="error">Network error: ' + error.message + '</div>';
                     })
                     .finally(() => {
                         submitBtn.disabled = false;
@@ -578,18 +557,6 @@
                     const formData = new FormData(this);
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const resultsDiv = document.getElementById('extract-results');
-                    const stegoFile = document.getElementById('stego-input').files[0];
-                    if (!stegoFile) {
-                        resultsDiv.style.display = 'block';
-                        resultsDiv.innerHTML = '<div class="error">Please select a stego image.</div>';
-                        return;
-                    }
-                    const maxBytes = 15 * 1024 * 1024;
-                    if (stegoFile.size > maxBytes) {
-                        resultsDiv.style.display = 'block';
-                        resultsDiv.innerHTML = '<div class="error">The stego image exceeds the 15MB size limit. Please use a smaller image or choose a lower processing size.</div>';
-                        return;
-                    }
                     
                     // Show loading
                     submitBtn.disabled = true;
@@ -597,7 +564,11 @@
                     resultsDiv.style.display = 'block';
                     resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Extracting secret image...</p></div>';
                     
-                    fetchJsonWithTimeout('/extract', { method: 'POST', body: formData }, 120000)
+                    fetch('/extract', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             displayExtractResults(data);
@@ -606,9 +577,7 @@
                         }
                     })
                     .catch(error => {
-                        const hint = ' If this keeps happening, try a smaller processing size or check the server logs.';
-                        const msg = (error.name === 'AbortError') ? 'Request timed out.' : ('Network error: ' + error.message);
-                        resultsDiv.innerHTML = '<div class="error">' + msg + hint + '</div>';
+                        resultsDiv.innerHTML = '<div class="error">Network error: ' + error.message + '</div>';
                     })
                     .finally(() => {
                         submitBtn.disabled = false;
@@ -736,7 +705,6 @@
             if (extractDownloads) extractDownloads.innerHTML = downloadsHtml;
         }
 
-        // Global functions that need to be accessible from onclick attributes
         function loadArtifacts() {
             const container = document.getElementById('results-container');
             if (!container) return;
@@ -852,4 +820,19 @@
         }
     </script>
 </body>
-</html>
+</html>'''
+    
+    # Create templates directory if it doesn't exist
+    templates_dir = 'templates'
+    os.makedirs(templates_dir, exist_ok=True)
+    
+    # Write the template file
+    template_path = os.path.join(templates_dir, 'index.html')
+    with open(template_path, 'w', encoding='utf-8') as f:
+        f.write(template_content)
+    
+    print(f"✅ Template fixed! Created: {template_path}")
+    print("🔄 Please restart the web application to see the changes.")
+
+if __name__ == '__main__':
+    create_complete_template()

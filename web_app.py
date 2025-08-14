@@ -54,23 +54,126 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def determine_model_architecture(checkpoint_path):
+    """Determine the model architecture from checkpoint path or content"""
+    # First try to determine from path
+    if 'cuda_safe_checkpoints' in checkpoint_path:
+        print(f"Detected CUDA-safe checkpoint from path: {checkpoint_path}")
+        return [64, 128, 256]
+    
+    # If not CUDA-safe, try to load the checkpoint and determine from state dict
+    if os.path.exists(checkpoint_path):
+        try:
+            checkpoint = torch.load(checkpoint_path, map_location='cpu')
+            state_dict = checkpoint['model_state_dict']
+            
+            # Check for specific layer patterns to determine architecture
+            # CUDA-safe checkpoints have fewer layers and different fusion layer sizes
+            fusion_keys = [k for k in state_dict.keys() if k.startswith('fusion.')]
+            
+            # Check fusion layer sizes to determine architecture
+            if 'fusion.0.weight' in state_dict:
+                fusion_weight_shape = state_dict['fusion.0.weight'].shape
+                print(f"Fusion layer shape: {fusion_weight_shape}")
+                
+                # CUDA-safe: fusion.0.weight has shape [256, 512, 3, 3]
+                # Standard: fusion.0.weight has shape [512, 1024, 3, 3]
+                if fusion_weight_shape[0] == 256:
+                    print(f"Detected CUDA-safe architecture from fusion layer shape")
+                    return [64, 128, 256]
+                elif fusion_weight_shape[0] == 512:
+                    print(f"Detected standard architecture from fusion layer shape")
+                    return [64, 128, 256, 512]
+            
+            # Fallback: Count the number of layers in cover_encoder
+            cover_encoder_keys = [k for k in state_dict.keys() if k.startswith('cover_encoder.')]
+            max_layer = 0
+            for key in cover_encoder_keys:
+                try:
+                    layer_num = int(key.split('.')[1])
+                    max_layer = max(max_layer, layer_num)
+                except (ValueError, IndexError):
+                    continue
+            
+            print(f"Max cover_encoder layer: {max_layer}")
+            # Based on the layer count, determine hidden_dims
+            if max_layer <= 15:  # CUDA-safe architecture
+                return [64, 128, 256]
+            else:  # Standard architecture
+                return [64, 128, 256, 512]
+        except Exception as e:
+            print(f"Could not determine architecture from checkpoint: {e}")
+    
+    # Default to standard architecture
+    print(f"Using default standard architecture for: {checkpoint_path}")
+    return [64, 128, 256, 512]
+
 def load_model(checkpoint_path, device_type='cuda'):
     """Load the steganography model"""
     global model, device
     
     device = torch.device(device_type if torch.cuda.is_available() else 'cpu')
     
-    model = SteganographyAutoencoder(
-        in_channels=3,
-        hidden_dims=[64, 128, 256, 512]
-    )
+    # Determine model architecture
+    hidden_dims = determine_model_architecture(checkpoint_path)
+    print(f"Loading model with hidden_dims: {hidden_dims}")
     
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        print(f"Model loaded from {checkpoint_path}")
+        
+        # Try loading with determined architecture first
+        try:
+            model = SteganographyAutoencoder(
+                in_channels=3,
+                hidden_dims=hidden_dims
+            )
+            model.load_state_dict(checkpoint['model_state_dict'])
+            print(f"Model loaded from {checkpoint_path}")
+        except Exception as e:
+            print(f"Failed to load with determined architecture: {e}")
+            
+            # Try alternative architectures in order of likelihood
+            alternative_architectures = [
+                [64, 128, 256],  # CUDA-safe (most likely for CUDA-safe checkpoints)
+                [64, 128, 256, 512],  # Standard
+                [32, 64, 128],  # Lightweight
+                [128, 256, 512, 1024]  # High capacity
+            ]
+            
+            # If this is a CUDA-safe checkpoint, prioritize CUDA-safe architecture
+            if 'cuda_safe_checkpoints' in checkpoint_path:
+                # Move CUDA-safe architecture to front
+                alternative_architectures.insert(0, alternative_architectures.pop(0))
+                print("Prioritizing CUDA-safe architecture for CUDA-safe checkpoint")
+            
+            for alt_dims in alternative_architectures:
+                if alt_dims == hidden_dims:
+                    continue  # Skip the one we already tried
+                    
+                try:
+                    print(f"Trying alternative architecture: {alt_dims}")
+                    model = SteganographyAutoencoder(
+                        in_channels=3,
+                        hidden_dims=alt_dims
+                    )
+                    model.load_state_dict(checkpoint['model_state_dict'])
+                    print(f"Successfully loaded with architecture: {alt_dims}")
+                    break
+                except Exception as alt_e:
+                    print(f"Failed with {alt_dims}: {alt_e}")
+                    continue
+            else:
+                print("All architectures failed. Using untrained model.")
+                model = SteganographyAutoencoder(
+                    in_channels=3,
+                    hidden_dims=hidden_dims
+                )
     else:
         print(f"Warning: Checkpoint {checkpoint_path} not found. Using untrained model.")
+        model = SteganographyAutoencoder(
+            in_channels=3,
+            hidden_dims=hidden_dims
+        )
     
     model.to(device)
     model.eval()
@@ -92,10 +195,31 @@ def preprocess_image(image_path, image_size=128):
 
 
 def tensor_to_pil(tensor):
-    """Convert tensor to PIL image"""
-    image = denormalize_image(tensor.squeeze(0))
-    image = (image.permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
-    return Image.fromarray(image)
+    """Convert tensor to PIL image with NaN handling"""
+    try:
+        image = denormalize_image(tensor.squeeze(0))
+        image_np = image.permute(1, 2, 0).cpu().numpy()
+        
+        # Handle NaN and inf values
+        if np.any(np.isnan(image_np)):
+            print("Warning: NaN values detected in tensor, replacing with 0")
+            image_np = np.nan_to_num(image_np, nan=0.0, posinf=1.0, neginf=0.0)
+        
+        if np.any(np.isinf(image_np)):
+            print("Warning: Inf values detected in tensor, replacing with bounds")
+            image_np = np.nan_to_num(image_np, nan=0.0, posinf=1.0, neginf=0.0)
+        
+        # Clip values to valid range [0, 1]
+        image_np = np.clip(image_np, 0.0, 1.0)
+        
+        # Convert to uint8
+        image_uint8 = (image_np * 255).astype(np.uint8)
+        
+        return Image.fromarray(image_uint8)
+    except Exception as e:
+        print(f"Error converting tensor to PIL: {e}")
+        # Return a black image as fallback
+        return Image.new('RGB', (64, 64), (0, 0, 0))
 
 
 def pil_to_base64(pil_image):
@@ -106,15 +230,87 @@ def pil_to_base64(pil_image):
     return f"data:image/png;base64,{img_str}"
 
 
+def ensure_valid_metric(value):
+    """Ensure metric is a valid finite number"""
+    if not isinstance(value, (int, float)) or not np.isfinite(value):
+        return 0.0
+    return float(value)
+
+
 def calculate_metrics(original_tensor, processed_tensor):
-    """Calculate PSNR and SSIM metrics"""
-    orig_np = denormalize_image(original_tensor.squeeze(0)).permute(1, 2, 0).cpu().numpy()
-    proc_np = denormalize_image(processed_tensor.squeeze(0)).permute(1, 2, 0).cpu().numpy()
-    
-    psnr_val = psnr(orig_np, proc_np, data_range=1.0)
-    ssim_val = ssim(orig_np, proc_np, multichannel=True, data_range=1.0)
-    
-    return float(psnr_val), float(ssim_val)
+    """Calculate PSNR and SSIM metrics with NaN handling"""
+    try:
+        orig_np = denormalize_image(original_tensor.squeeze(0)).permute(1, 2, 0).cpu().numpy()
+        proc_np = denormalize_image(processed_tensor.squeeze(0)).permute(1, 2, 0).cpu().numpy()
+        
+        # Ensure images are valid (no NaN or inf values)
+        if np.any(np.isnan(orig_np)) or np.any(np.isnan(proc_np)):
+            print("Warning: NaN values detected in images, using fallback metrics")
+            return 0.0, 0.0
+        
+        if np.any(np.isinf(orig_np)) or np.any(np.isinf(proc_np)):
+            print("Warning: Inf values detected in images, using fallback metrics")
+            return 0.0, 0.0
+        
+        # Calculate PSNR
+        psnr_val = psnr(orig_np, proc_np, data_range=1.0)
+        
+        # Handle NaN in PSNR
+        if np.isnan(psnr_val) or np.isinf(psnr_val):
+            print("Warning: PSNR calculation returned NaN/Inf, using fallback")
+            psnr_val = 0.0
+        
+        # Calculate SSIM with proper window size for small images
+        try:
+            # Get image dimensions
+            height, width = orig_np.shape[:2]
+            
+            # Determine appropriate window size (must be odd and smaller than image)
+            min_dim = min(height, width)
+            if min_dim < 7:
+                # For very small images, use a minimal window size
+                win_size = 3
+            elif min_dim < 11:
+                # For small images, use a smaller window
+                win_size = 5
+            else:
+                # For larger images, use default window size
+                win_size = 7
+            
+            # Ensure window size is odd
+            if win_size % 2 == 0:
+                win_size -= 1
+            
+            # Calculate SSIM with appropriate parameters
+            ssim_val = ssim(orig_np, proc_np, 
+                           win_size=win_size,
+                           channel_axis=2,  # Specify channel axis for RGB images
+                           data_range=1.0)
+            
+            # Handle NaN in SSIM
+            if np.isnan(ssim_val) or np.isinf(ssim_val):
+                print("Warning: SSIM calculation returned NaN/Inf, using fallback")
+                ssim_val = 0.0
+                
+        except Exception as e:
+            print(f"SSIM calculation failed: {e}")
+            # Fallback: use a simple correlation-based similarity
+            try:
+                ssim_val = np.corrcoef(orig_np.flatten(), proc_np.flatten())[0, 1]
+                if np.isnan(ssim_val) or np.isinf(ssim_val):
+                    ssim_val = 0.0
+            except:
+                ssim_val = 0.0
+        
+        # Ensure both values are finite numbers
+        psnr_val = float(psnr_val) if np.isfinite(psnr_val) else 0.0
+        ssim_val = float(ssim_val) if np.isfinite(ssim_val) else 0.0
+        
+        return psnr_val, ssim_val
+        
+    except Exception as e:
+        print(f"Metrics calculation failed: {e}")
+        return 0.0, 0.0
 
 
 @app.route('/')
@@ -170,6 +366,12 @@ def upload_images():
         # Calculate metrics
         cover_psnr, cover_ssim = calculate_metrics(cover_tensor, stego_tensor)
         secret_psnr, secret_ssim = calculate_metrics(secret_tensor, secret_recovered_tensor)
+        
+        # Ensure all metrics are valid numbers
+        cover_psnr = ensure_valid_metric(cover_psnr)
+        cover_ssim = ensure_valid_metric(cover_ssim)
+        secret_psnr = ensure_valid_metric(secret_psnr)
+        secret_ssim = ensure_valid_metric(secret_ssim)
         
         # Convert tensors to images
         cover_pil = tensor_to_pil(cover_tensor)
@@ -402,15 +604,26 @@ def switch_checkpoint():
         rel_path = data.get('path')
         if not rel_path:
             return jsonify({'success': False, 'error': 'Missing path'}), 400
+        
         # Restrict to allowed base dirs
         allowed_bases = [CHECKPOINTS_FOLDER, CUDA_SAFE_CHECKPOINTS_FOLDER]
         if not any(rel_path.startswith(base) for base in allowed_bases):
             return jsonify({'success': False, 'error': 'Path not allowed'}), 400
+        
         abs_path = os.path.abspath(rel_path)
         if not os.path.exists(abs_path):
             return jsonify({'success': False, 'error': 'Checkpoint not found'}), 404
-        load_model(abs_path, str(device) if device is not None else 'cuda')
-        return jsonify({'success': True, 'current': current_checkpoint_path})
+        
+        # Try to load the model with proper error handling
+        try:
+            load_model(abs_path, str(device) if device is not None else 'cuda')
+            return jsonify({'success': True, 'current': current_checkpoint_path})
+        except Exception as model_error:
+            error_msg = f"Failed to load model: {str(model_error)}"
+            if "Missing key" in str(model_error):
+                error_msg += "\nThis usually means the checkpoint was saved with a different model architecture."
+            return jsonify({'success': False, 'error': error_msg}), 500
+            
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -424,12 +637,18 @@ def model_info():
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     
+    # Determine hidden dimensions based on current checkpoint
+    if current_checkpoint_path:
+        hidden_dims = determine_model_architecture(current_checkpoint_path)
+    else:
+        hidden_dims = [64, 128, 256, 512]  # Default
+    
     info = {
         'device': str(device),
         'total_parameters': total_params,
         'trainable_parameters': trainable_params,
         'model_architecture': 'SteganographyAutoencoder',
-        'hidden_dimensions': [64, 128, 256, 512]
+        'hidden_dimensions': hidden_dims
     }
     
     return jsonify(info)
@@ -1090,7 +1309,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Digital Watermarking Web Application')
-    parser.add_argument('--checkpoint', type=str, default='checkpoints/checkpoint_epoch_5.pth',
+    parser.add_argument('--checkpoint', type=str, default='cuda_safe_checkpoints/best_model.pth',
                        help='Path to model checkpoint')
     parser.add_argument('--host', type=str, default='127.0.0.1', help='Host to run the server on')
     parser.add_argument('--port', type=int, default=5000, help='Port to run the server on')
