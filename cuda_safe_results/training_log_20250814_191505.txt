@@ -11,3 +11,19 @@
 [19:15:13] [Training] secret range: -1.0000 .. 1.0000
 [19:57:34] [Validation] cover range: -1.0000 .. 1.0000
 [19:57:34] [Validation] secret range: -1.0000 .. 1.0000
+[19:59:38] 
+Epoch 1 Summary:
+[19:59:38]   Duration: 2671.3s
+[19:59:38]   Total elapsed: 44.5min
+[19:59:38]   train_loss: 0.555983 ★
+[19:59:38]   val_loss: 0.492692 ★
+[19:59:38]   learning_rate: 0.000500 ★
+[19:59:38]   GPU Memory: 0.2GB / 0.6GB reserved
+[19:59:38]   System: CPU 15.6% | RAM 79.9%
+[19:59:38]   ★ New best model saved!
+[19:59:38] 
+============================================================
+[19:59:38] Epoch 2/50 | ETA: 08:21:13
+[19:59:38] ============================================================
+[19:59:38] [Training] cover range: -1.0000 .. 1.0000
+[19:59:38] [Training] secret range: -1.0000 .. 1.0000
