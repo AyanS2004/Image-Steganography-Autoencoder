@@ -1,0 +1,38 @@
+[02:34:08] ================================================================================
+[02:34:08] Training started at: 2025-08-14 02:34:08
+[02:34:08] Total epochs: 50
+[02:34:08] ================================================================================
+[02:34:08] Using device: cuda
+[02:34:08] 
+Training Configuration:
+[02:34:08]   train_dir: D:\COCO\train
+[02:34:08]   val_dir: D:\COCO\val
+[02:34:08]   epochs: 50
+[02:34:08]   batch_size: 8
+[02:34:08]   image_size: 256
+[02:34:08]   lr: 0.001
+[02:34:08]   weight_decay: 0.0
+[02:34:08]   device: cuda
+[02:34:08]   num_workers: 4
+[02:34:08]   cosine: False
+[02:34:08]   tmax: 100
+[02:34:08]   early_stop_patience: 15
+[02:34:08]   gradient_accumulation_steps: 2
+[02:34:08]   max_grad_norm: 1.0
+[02:34:08]   save_freq: 5
+[02:34:08]   vis_freq: 10
+[02:34:08]   out_dir: cuda_safe_results
+[02:34:08]   ckpt_dir: cuda_safe_checkpoints
+[02:34:08]   use_cifar: True
+[02:34:08] Using CIFAR-10 dataset
+[02:34:09] Training batches: 6250
+[02:34:09] Validation batches: 1250
+[02:34:11] Model initialization successful ✓
+[02:34:11] Mixed precision enabled
+[02:34:11] Model: 6,388,998 total params | 6,388,998 trainable
+[02:34:11] 
+============================================================
+[02:34:11] Epoch 1/50
+[02:34:11] ============================================================
+[02:35:17] Training interrupted by user
+[02:35:17] Training session ended

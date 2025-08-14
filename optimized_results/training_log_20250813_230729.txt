@@ -1,0 +1,52 @@
+[23:07:29] ================================================================================
+[23:07:29] Training started at: 2025-08-13 23:07:29
+[23:07:29] Total epochs: 100
+[23:07:29] ================================================================================
+[23:07:29] System Information:
+[23:07:29]   Python: 2.6.0+cu124
+[23:07:29]   PyTorch: 2.6.0+cu124
+[23:07:29]   CUDA Available: True
+[23:07:29]   GPU: NVIDIA GeForce RTX 3050 Laptop GPU
+[23:07:29]   GPU Memory: 4.0GB
+[23:07:29]   CPU Cores: 12
+[23:07:29]   RAM: 15.7GB
+[23:07:29] Using device: cuda
+[23:07:29] 
+Training Configuration:
+[23:07:29]   train_dir: D:/COCO/train
+[23:07:29]   val_dir: D:/COCO/val
+[23:07:29]   epochs: 100
+[23:07:29]   batch_size: 32
+[23:07:29]   image_size: 256
+[23:07:29]   lr: 0.001
+[23:07:29]   weight_decay: 0.0
+[23:07:29]   device: cuda
+[23:07:29]   num_workers: 4
+[23:07:29]   cosine: False
+[23:07:29]   tmax: 100
+[23:07:29]   early_stop_patience: 15
+[23:07:29]   save_freq: 5
+[23:07:29]   vis_freq: 5
+[23:07:29]   progress_freq: 10
+[23:07:29]   out_dir: optimized_results
+[23:07:29]   ckpt_dir: checkpoints
+[23:07:29]   use_cifar: False
+[23:07:30] Training batches: 3326
+[23:07:30] Validation batches: 370
+[23:07:32] Model: 14,028,230 total params | 14,028,230 trainable
+[23:07:32] 
+============================================================
+[23:07:32] Epoch 1/100
+[23:07:32] ============================================================
+[23:08:07] Progress plot saved: optimized_results\final_progress.png
+[23:08:07] 
+================================================================================
+[23:08:07] TRAINING COMPLETE!
+[23:08:07] ================================================================================
+[23:08:07]   Duration: 0.6 minutes (0.01 hours)
+[23:08:07]   Final epoch: 1
+[23:08:07]   Best validation loss: inf
+[23:08:07]   Best model: checkpoints\best_model.pth
+[23:08:07]   Results directory: optimized_results
+[23:08:07]   Training log: optimized_results\training_log_20250813_230729.txt
+[23:08:07] ================================================================================

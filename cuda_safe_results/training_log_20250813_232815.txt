@@ -1,0 +1,174 @@
+[23:28:15] ================================================================================
+[23:28:15] Training started at: 2025-08-13 23:28:15
+[23:28:15] Total epochs: 10
+[23:28:15] ================================================================================
+[23:28:15] Using device: cuda
+[23:28:15] 
+Training Configuration:
+[23:28:15]   train_dir: D:\COCO\train
+[23:28:15]   val_dir: D:\COCO\val
+[23:28:15]   epochs: 10
+[23:28:15]   batch_size: 4
+[23:28:15]   image_size: 64
+[23:28:15]   lr: 0.001
+[23:28:15]   weight_decay: 0.0
+[23:28:15]   device: cuda
+[23:28:15]   num_workers: 0
+[23:28:15]   cosine: False
+[23:28:15]   tmax: 100
+[23:28:15]   early_stop_patience: 15
+[23:28:15]   gradient_accumulation_steps: 1
+[23:28:15]   max_grad_norm: 1.0
+[23:28:15]   save_freq: 5
+[23:28:15]   vis_freq: 10
+[23:28:15]   out_dir: cuda_safe_results
+[23:28:15]   ckpt_dir: cuda_safe_checkpoints
+[23:28:15]   use_cifar: True
+[23:28:15] Using CIFAR-10 dataset
+[23:28:17] Training batches: 12500
+[23:28:17] Validation batches: 2500
+[23:28:18] Model initialization successful ✓
+[23:28:18] Mixed precision enabled
+[23:28:18] Model: 6,388,998 total params | 6,388,998 trainable
+[23:28:18] 
+============================================================
+[23:28:18] Epoch 1/10
+[23:28:18] ============================================================
+[23:41:56] 
+Epoch 1 Summary:
+[23:41:56]   Duration: 818.3s
+[23:41:56]   Total elapsed: 13.7min
+[23:41:56]   train_loss: 0.671779 ★
+[23:41:56]   val_loss: 0.397144 ★
+[23:41:56]   learning_rate: 0.001000 ★
+[23:41:56]   GPU Memory: 0.2GB / 0.2GB reserved
+[23:41:56]   System: CPU 59.5% | RAM 58.3%
+[23:41:57]   ★ New best model saved!
+[23:41:57] 
+============================================================
+[23:41:57] Epoch 2/10 | ETA: 01:44:41
+[23:41:57] ============================================================
+[23:57:09] 
+Epoch 2 Summary:
+[23:57:09]   Duration: 912.3s
+[23:57:09]   Total elapsed: 28.9min
+[23:57:09]   train_loss: 0.315842 ★
+[23:57:09]   val_loss: 0.319277 ★
+[23:57:09]   learning_rate: 0.001000 ★
+[23:57:09]   GPU Memory: 0.2GB / 0.2GB reserved
+[23:57:09]   System: CPU 61.2% | RAM 60.9%
+[23:57:09]   ★ New best model saved!
+[23:57:09] 
+============================================================
+[23:57:09] Epoch 3/10 | ETA: 01:52:31
+[23:57:09] ============================================================
+[00:12:03] 
+Epoch 3 Summary:
+[00:12:03]   Duration: 893.5s
+[00:12:03]   Total elapsed: 43.8min
+[00:12:03]   train_loss: 0.249922 ★
+[00:12:03]   val_loss: 0.305649 ★
+[00:12:03]   learning_rate: 0.001000 ★
+[00:12:03]   GPU Memory: 0.2GB / 0.2GB reserved
+[00:12:03]   System: CPU 62.2% | RAM 62.4%
+[00:12:03]   ★ New best model saved!
+[00:12:03] 
+============================================================
+[00:12:03] Epoch 4/10 | ETA: 01:54:06
+[00:12:03] ============================================================
+[00:26:51] 
+Epoch 4 Summary:
+[00:26:51]   Duration: 888.5s
+[00:26:51]   Total elapsed: 58.6min
+[00:26:51]   train_loss: 0.179989 ★
+[00:26:51]   val_loss: 0.234355 ★
+[00:26:51]   learning_rate: 0.001000 ★
+[00:26:51]   GPU Memory: 0.2GB / 0.2GB reserved
+[00:26:51]   System: CPU 61.5% | RAM 62.0%
+[00:26:52]   ★ New best model saved!
+[00:26:52] 
+============================================================
+[00:26:52] Epoch 5/10 | ETA: 01:54:40
+[00:26:52] ============================================================
+[00:41:25] 
+Epoch 5 Summary:
+[00:41:25]   Duration: 873.6s
+[00:41:25]   Total elapsed: 73.2min
+[00:41:25]   train_loss: 0.158915 ★
+[00:41:25]   val_loss: 0.196499 ★
+[00:41:25]   learning_rate: 0.001000 ★
+[00:41:25]   GPU Memory: 0.2GB / 0.2GB reserved
+[00:41:25]   System: CPU 59.5% | RAM 61.6%
+[00:41:25] ✓ Checkpoint saved: cuda_safe_checkpoints\checkpoint_epoch_005.pth
+[00:41:25]   ★ New best model saved!
+[00:41:26] 
+============================================================
+[00:41:26] Epoch 6/10 | ETA: 01:54:32
+[00:41:26] ============================================================
+[00:55:39] 
+Epoch 6 Summary:
+[00:55:39]   Duration: 853.1s
+[00:55:39]   Total elapsed: 87.4min
+[00:55:39]   train_loss: 0.134703 ★
+[00:55:39]   val_loss: 0.168619 ★
+[00:55:39]   learning_rate: 0.001000 ★
+[00:55:39]   GPU Memory: 0.2GB / 0.2GB reserved
+[00:55:39]   System: CPU 61.1% | RAM 60.2%
+[00:55:39]   ★ New best model saved!
+[00:55:39] 
+============================================================
+[00:55:39] Epoch 7/10 | ETA: 01:53:52
+[00:55:39] ============================================================
+[01:10:08] 
+Epoch 7 Summary:
+[01:10:08]   Duration: 869.4s
+[01:10:08]   Total elapsed: 101.9min
+[01:10:08]   train_loss: 0.107041 ★
+[01:10:08]   val_loss: 0.162635 ★
+[01:10:08]   learning_rate: 0.001000 ★
+[01:10:08]   GPU Memory: 0.2GB / 0.2GB reserved
+[01:10:08]   System: CPU 64.3% | RAM 68.6%
+[01:10:08]   ★ New best model saved!
+[01:10:09] 
+============================================================
+[01:10:09] Epoch 8/10 | ETA: 01:53:47
+[01:10:09] ============================================================
+[01:24:38] 
+Epoch 8 Summary:
+[01:24:38]   Duration: 870.0s
+[01:24:38]   Total elapsed: 116.4min
+[01:24:38]   train_loss: 0.095699 ★
+[01:24:38]   val_loss: 0.153675 ★
+[01:24:38]   learning_rate: 0.001000 ★
+[01:24:38]   GPU Memory: 0.2GB / 0.2GB reserved
+[01:24:38]   System: CPU 60.2% | RAM 66.5%
+[01:24:39]   ★ New best model saved!
+[01:24:39] 
+============================================================
+[01:24:39] Epoch 9/10 | ETA: 01:53:43
+[01:24:39] ============================================================
+[01:39:24] 
+Epoch 9 Summary:
+[01:39:24]   Duration: 885.3s
+[01:39:24]   Total elapsed: 131.1min
+[01:39:24]   train_loss: 0.088877 ★
+[01:39:24]   val_loss: 0.138899 ★
+[01:39:24]   learning_rate: 0.001000 ★
+[01:39:24]   GPU Memory: 0.2GB / 0.2GB reserved
+[01:39:24]   System: CPU 61.5% | RAM 64.8%
+[01:39:24]   ★ New best model saved!
+[01:39:24] 
+============================================================
+[01:39:24] Epoch 10/10 | ETA: 01:53:58
+[01:39:24] ============================================================
+[01:54:13] 
+Epoch 10 Summary:
+[01:54:13]   Duration: 888.5s
+[01:54:13]   Total elapsed: 146.0min
+[01:54:13]   train_loss: 0.083829 ★
+[01:54:13]   val_loss: 0.160894  
+[01:54:13]   learning_rate: 0.001000 ★
+[01:54:13]   GPU Memory: 0.2GB / 0.2GB reserved
+[01:54:13]   System: CPU 60.1% | RAM 60.9%
+[01:54:13] ✓ Checkpoint saved: cuda_safe_checkpoints\checkpoint_epoch_010.pth
+[01:54:13] Training session ended

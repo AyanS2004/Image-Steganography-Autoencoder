@@ -1,0 +1,40 @@
+[23:13:22] ================================================================================
+[23:13:22] Training started at: 2025-08-13 23:13:22
+[23:13:22] Total epochs: 100
+[23:13:22] ================================================================================
+[23:13:22] System Information:
+[23:13:22]   Python: 2.6.0+cu124
+[23:13:22]   PyTorch: 2.6.0+cu124
+[23:13:22]   CUDA Available: True
+[23:13:22]   GPU: NVIDIA GeForce RTX 3050 Laptop GPU
+[23:13:22]   GPU Memory: 4.0GB
+[23:13:22]   CPU Cores: 12
+[23:13:22]   RAM: 15.7GB
+[23:13:22] Using device: cuda
+[23:13:22] 
+Training Configuration:
+[23:13:22]   train_dir: D:/COCO/train
+[23:13:22]   val_dir: D:/COCO/val
+[23:13:22]   epochs: 100
+[23:13:22]   batch_size: 32
+[23:13:22]   image_size: 256
+[23:13:22]   lr: 0.001
+[23:13:22]   weight_decay: 0.0
+[23:13:22]   device: cuda
+[23:13:22]   num_workers: 4
+[23:13:22]   cosine: False
+[23:13:22]   tmax: 100
+[23:13:22]   early_stop_patience: 15
+[23:13:22]   save_freq: 5
+[23:13:22]   vis_freq: 5
+[23:13:22]   progress_freq: 10
+[23:13:22]   out_dir: optimized_results
+[23:13:22]   ckpt_dir: checkpoints
+[23:13:22]   use_cifar: False
+[23:13:23] Training batches: 3326
+[23:13:23] Validation batches: 370
+[23:13:25] Model: 25,865,478 total params | 25,865,478 trainable
+[23:13:25] 
+============================================================
+[23:13:25] Epoch 1/100
+[23:13:25] ============================================================

@@ -1,0 +1,20 @@
+{
+  "evaluation_date": "2025-08-14T02:00:07.170340",
+  "model_params": 6388998,
+  "results": {
+    "basic_metrics": {
+      "cover_psnr_mean": 25.786851913333898,
+      "cover_psnr_std": 1.899395558166898,
+      "cover_ssim_mean": 0.924845814704895,
+      "cover_ssim_std": 0.030551103875041008,
+      "secret_psnr_mean": 25.979611253200215,
+      "secret_psnr_std": 1.7838781558934882,
+      "secret_ssim_mean": 0.9332215785980225,
+      "secret_ssim_std": 0.04045998305082321
+    },
+    "capacity": {
+      "bits_per_pixel": 24.0,
+      "total_samples": 20
+    }
+  }
+}
