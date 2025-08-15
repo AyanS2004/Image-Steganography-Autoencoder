@@ -13,7 +13,7 @@ class SteganographyAutoencoder(nn.Module):
     and can recover both the steganographic image and the secret image.
     """
     
-    def __init__(self, in_channels=3, hidden_dims=[64, 128, 256, 512]):
+    def __init__(self, in_channels=3, hidden_dims=[64, 128, 256]):
         super().__init__()
         
         self.in_channels = in_channels
