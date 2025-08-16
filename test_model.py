@@ -6,6 +6,9 @@ import random
 import os
 from skimage.exposure import match_histograms
 import numpy as np
+import matplotlib.pyplot as plt
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
 
 from models import SteganographyAutoencoder  # Import from your models.py
 
@@ -49,24 +52,42 @@ secret_img = transform(Image.open(secret_path).convert("RGB")).unsqueeze(0).to(D
 with torch.no_grad():
     stego, secret_recovered = model(cover_img, secret_img)
 
-# Save raw outputs
+# Save images
 to_pil = transforms.ToPILImage()
-to_pil(denorm(cover_img.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "cover.png"))
-to_pil(denorm(secret_img.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "secret.png"))
-to_pil(denorm(stego.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "encoded_stego.png"))
-to_pil(denorm(secret_recovered.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "decoded_secret.png"))
+to_pil(denorm(cover_img.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "figure_5_1_cover.png"))
+to_pil(denorm(secret_img.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "figure_5_2_secret.png"))
+to_pil(denorm(stego.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "figure_5_3_stego.png"))
+to_pil(denorm(secret_recovered.squeeze().cpu())).save(os.path.join(OUTPUT_DIR, "figure_5_5_decoded_secret.png"))
 
-# === Option 3: Post-process decoded secret with histogram matching ===
+# Color-corrected secret
 decoded_img = denorm(secret_recovered.squeeze().cpu()).permute(1, 2, 0).numpy()
 original_img = denorm(secret_img.squeeze().cpu()).permute(1, 2, 0).numpy()
-
 matched = match_histograms(decoded_img, original_img, channel_axis=-1)
-
 Image.fromarray((matched * 255).astype(np.uint8)).save(
-    os.path.join(OUTPUT_DIR, "decoded_secret_color_corrected.png")
+    os.path.join(OUTPUT_DIR, "figure_5_5b_decoded_secret_color_corrected.png")
 )
 
+# Heatmap (absolute difference)
+cover_np = denorm(cover_img.squeeze().cpu()).permute(1, 2, 0).numpy()
+stego_np = denorm(stego.squeeze().cpu()).permute(1, 2, 0).numpy()
+diff = np.abs(cover_np - stego_np).mean(axis=2)  # average over RGB
+
+plt.imshow(diff, cmap='hot')
+plt.axis('off')
+plt.colorbar(label="Difference Intensity")
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_DIR, "figure_5_4_heatmap.png"), dpi=300)
+plt.close()
+
+# PSNR & SSIM metrics
+psnr_value = psnr(cover_np, stego_np, data_range=1)
+ssim_value = ssim(cover_np, stego_np, channel_axis=2, data_range=1)
+
+metrics_table = f"PSNR: {psnr_value:.2f} dB\nSSIM: {ssim_value:.4f}\n"
+with open(os.path.join(OUTPUT_DIR, "figure_5_7_metrics.txt"), "w") as f:
+    f.write(metrics_table)
+
 print(f"Done! Results saved in {OUTPUT_DIR}")
+print(metrics_table)
 print(f"Cover: {images[0]}")
 print(f"Secret: {images[1]}")
-print("Color-corrected decoded secret saved as decoded_secret_color_corrected.png")
