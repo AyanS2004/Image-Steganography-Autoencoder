@@ -6,31 +6,31 @@ A comprehensive, production-ready implementation of image-in-image steganography
 
 This advanced implementation uses state-of-the-art deep learning techniques to perform robust image-in-image steganography:
 
-- ** Encoder Network**: Embeds secret images into cover images with minimal visual distortion
-- ** Decoder Network**: Extracts hidden secret images from stego images with high fidelity
-- ** Advanced Training**: Multi-objective optimization with perceptual loss functions
-- ** Multiple Deployment Options**: From research prototypes to production web applications
+-  Encoder Network: Embeds secret images into cover images with minimal visual distortion
+-  Decoder Network: Extracts hidden secret images from stego images with high fidelity
+-  Advanced Training: Multi-objective optimization with perceptual loss functions
+-  Multiple Deployment Options: From research prototypes to production web applications
 
 ##  Key Features
 
 ### Core Capabilities
-- ** Multiple Model Architectures**: Lightweight, standard, high-capacity, and robust variants
-- ** Advanced Loss Functions**: MSE, SSIM, perceptual, and adversarial losses
-- ** Comprehensive Evaluation**: Robustness testing against common attacks (JPEG, noise, blur, etc.)
-- ** Performance Optimization**: Mixed precision training, gradient clipping, advanced schedulers
-- ** Interactive Demo**: Real-time demonstration with synthetic and custom images
+- Multiple Model Architectures: Lightweight, standard, high-capacity, and robust variants
+- Advanced Loss Functions: MSE, SSIM, perceptual, and adversarial losses
+- Comprehensive Evaluation: Robustness testing against common attacks (JPEG, noise, blur, etc.)
+- Performance Optimization: Mixed precision training, gradient clipping, advanced schedulers
+- Interactive Demo: Real-time demonstration with synthetic and custom images
 
 ### User Interfaces
-- ** Web Application**: Beautiful, responsive web interface for easy usage
-- ** RESTful API**: Programmatic access for integration with other systems
-- ** Command Line Tools**: Comprehensive CLI for batch processing and automation
-- ** Visualization Suite**: Advanced plotting and analysis tools
+- Web Application: Beautiful, responsive web interface for easy usage
+- RESTful API: Programmatic access for integration with other systems
+- Command Line Tools: Comprehensive CLI for batch processing and automation
+- Visualization Suite: Advanced plotting and analysis tools
 
 ### Deployment & Production
-- ** Batch Processing**: Handle multiple images with parallel processing
-- ** Model Monitoring**: Training metrics, validation curves, and performance tracking
-- ** Custom Datasets**: Support for any image dataset with flexible preprocessing
-- ** Robustness Testing**: Evaluation against compression, noise, geometric attacks
+- Batch Processing: Handle multiple images with parallel processing
+- Model Monitoring: Training metrics, validation curves, and performance tracking
+- Custom Datasets: Support for any image dataset with flexible preprocessing
+- Robustness Testing: Evaluation against compression, noise, geometric attacks
 
 ## Architecture
 
