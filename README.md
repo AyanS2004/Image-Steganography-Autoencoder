@@ -71,7 +71,7 @@ python setup.py
 
 1. **Clone and Navigate**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/AyanS2004/Image-Steganography-Autoencoder.git
    cd DigitalWatermarking
    ```
 
@@ -396,7 +396,7 @@ We welcome contributions! Please see our contribution guidelines:
 ### Development Setup
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/AyanS2004/Image-Steganography-Autoencoder.git
 cd DigitalWatermarking
 
 # Install development dependencies
