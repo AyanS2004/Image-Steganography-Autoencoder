@@ -13,7 +13,7 @@ from skimage.metrics import structural_similarity as ssim
 from models import SteganographyAutoencoder  # Import from your models.py
 
 # ===== CONFIG =====
-MODEL_PATH = "cuda_safe_checkpoints/checkpoint_epoch_005.pth"
+MODEL_PATH = "cuda_safe_checkpoints/best_model.pth"
 TEST_IMAGES_DIR = "test_images"
 OUTPUT_DIR = "test_results"
 IMAGE_SIZE = 256
