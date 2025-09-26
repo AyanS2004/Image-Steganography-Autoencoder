@@ -106,7 +106,12 @@ def calculate_metrics(original_tensor, processed_tensor):
 
 @app.route('/')
 def index():
-    """Main page"""
+    """Main page with enhanced interface"""
+    return render_template('enhanced_index.html')
+
+@app.route('/classic')
+def classic():
+    """Classic interface"""
     return render_template('index.html')
 
 

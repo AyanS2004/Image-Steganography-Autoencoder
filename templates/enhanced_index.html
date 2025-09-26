@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SteganoSuite - Advanced Digital Watermarking</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --darker: #111827;
+            --light: #f8fafc;
+            --border: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            padding: 0.875rem 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.08);
+            border-left-color: var(--primary-solid);
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.12);
+            border-left-color: var(--primary-solid);
+            color: var(--primary-solid);
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 2rem;
+            background: var(--primary);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: scale(1.5);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        /* Upload Areas */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--primary-solid);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-solid);
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-solid);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-error {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Image Display */
+        .image-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            margin: 0 auto;
+            display: block;
+        }
+
+        .image-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .image-card {
+            text-align: center;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .image-card h4 {
+            margin: 1rem 0 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 2rem 1.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-solid);
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--primary-solid);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Progress */
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 50px 50px;
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            border-left: 4px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: currentColor;
+            opacity: 0.3;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--error);
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--info);
+            color: #1e40af;
+        }
+
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        /* Batch Processing */
+        .batch-queue {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s ease;
+        }
+
+        .queue-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #92400e;
+        }
+
+        .status-processing {
+            background: rgba(59, 130, 246, 0.2);
+            color: #1e40af;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #065f46;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #991b1b;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-visible {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 1rem;
+                border-bottom: 1px solid var(--border);
+                margin: -2rem -2rem 2rem;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .card-header, .card-body {
+                padding: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.875rem;
+            }
+        }
+
+        /* Animations */
+        .bounce-in {
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Utility Classes */
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .ml-3 { margin-left: 0.75rem; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+    </style>
+</head>
+<body x-data="steganographyApp()">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" :class="{ 'mobile-visible': sidebarOpen }">
+            <div class="sidebar-header">
+                <h1 class="logo">
+                    <i class="fas fa-mask"></i>
+                    SteganoSuite
+                </h1>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" :class="{ active: activeSection === 'dashboard' }" @click="setActiveSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" :class="{ active: activeSection === 'embed' }" @click="setActiveSection('embed')">
+                    <i class="fas fa-eye-slash"></i>
+                    <span>Embed Secret</span>
+                </div>
+                <div class="nav-item" :class="{ active: activeSection === 'extract' }" @click="setActiveSection('extract')">
+                    <i class="fas fa-search"></i>
+                    <span>Extract Secret</span>
+                </div>
+                <div class="nav-item" :class="{ active: activeSection === 'batch' }" @click="setActiveSection('batch')">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Batch Processing</span>
+                </div>
+                <div class="nav-item" :class="{ active: activeSection === 'training' }" @click="setActiveSection('training')">
+                    <i class="fas fa-brain"></i>
+                    <span>Model Training</span>
+                </div>
+                <div class="nav-item" :class="{ active: activeSection === 'settings' }" @click="setActiveSection('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Mobile Header -->
+            <header class="mobile-header" style="display: none;">
+                <button @click="sidebarOpen = !sidebarOpen" class="btn btn-secondary">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 x-text="getSectionTitle(activeSection)"></h2>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section class="content-section active" :class="{ active: activeSection === 'dashboard' }">
+                <div class="section-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </div>
+                
+                <div class="grid grid-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-bar"></i> System Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="stats.totalProcessed">0</div>
+                                    <div class="metric-label">Images Processed</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="stats.avgPSNR + ' dB'">-- dB</div>
+                                    <div class="metric-label">Avg PSNR</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-microchip"></i> Model Status</h3>
+                        </div>
+                        <div class="card-body">
+                            <div x-show="modelInfo.loaded" class="alert alert-success">
+                                <strong>Models Ready:</strong> <span x-text="modelInfo.availableModels?.length || 0"></span> loaded
+                            </div>
+                            <div x-show="!modelInfo.loaded" class="alert alert-warning">
+                                <strong>Loading Models...</strong>
+                            </div>
+                            <div class="mt-4">
+                                <p><strong>Device:</strong> <span x-text="modelInfo.device"></span></p>
+                                <p><strong>CUDA Available:</strong> <span x-text="modelInfo.cudaAvailable ? 'Yes' : 'No'"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-rocket"></i> Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid">
+                                <button @click="setActiveSection('embed')" class="btn btn-primary">
+                                    <i class="fas fa-eye-slash"></i>
+                                    Embed Secret
+                                </button>
+                                <button @click="setActiveSection('extract')" class="btn btn-secondary">
+                                    <i class="fas fa-search"></i>
+                                    Extract Secret
+                                </button>
+                                <button @click="setActiveSection('batch')" class="btn btn-warning">
+                                    <i class="fas fa-layer-group"></i>
+                                    Batch Process
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Military-Grade Security</h3>
+                        <p>Advanced steganography with multiple model variants for different security requirements and performance needs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>GPU Acceleration</h3>
+                        <p>Lightning-fast processing with CUDA support, batch operations, and optimized inference pipelines.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Advanced Analytics</h3>
+                        <p>Comprehensive quality metrics, model evaluation, training monitoring, and performance analysis.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Embed Section -->
+            <section class="content-section" :class="{ active: activeSection === 'embed' }">
+                <div class="section-title">
+                    <i class="fas fa-eye-slash"></i>
+                    Embed Secret Image
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Hide a Secret Image in a Cover Image</h3>
+                        <p>Upload both images to create a steganographic image that appears identical to the cover.</p>
+                    </div>
+                    <div class="card-body">
+                        <form @submit.prevent="processEmbed()">
+                            <div class="grid grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Cover Image</label>
+                                    <div class="upload-area" 
+                                         @dragover.prevent="dragover = true" 
+                                         @dragleave.prevent="dragover = false"
+                                         @drop.prevent="handleDrop($event, 'cover')"
+                                         :class="{ dragover: dragover }"
+                                         @click="$refs.coverInput.click()">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                        <p><strong>Choose Cover Image</strong></p>
+                                        <p class="text-sm" style="color: #6b7280;">Click here or drag and drop</p>
+                                    </div>
+                                    <input type="file" x-ref="coverInput" accept="image/*" @change="handleFileSelect($event, 'cover')" style="display: none;">
+                                    <div x-show="embedData.coverPreview" class="mt-4 text-center">
+                                        <img :src="embedData.coverPreview" class="image-preview" alt="Cover Preview">
+                                        <p class="mt-2 font-semibold" x-text="embedData.coverFile?.name"></p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Secret Image</label>
+                                    <div class="upload-area" 
+                                         @dragover.prevent="dragover = true" 
+                                         @dragleave.prevent="dragover = false"
+                                         @drop.prevent="handleDrop($event, 'secret')"
+                                         :class="{ dragover: dragover }"
+                                         @click="$refs.secretInput.click()">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-user-secret"></i>
+                                        </div>
+                                        <p><strong>Choose Secret Image</strong></p>
+                                        <p class="text-sm" style="color: #6b7280;">Click here or drag and drop</p>
+                                    </div>
+                                    <input type="file" x-ref="secretInput" accept="image/*" @change="handleFileSelect($event, 'secret')" style="display: none;">
+                                    <div x-show="embedData.secretPreview" class="mt-4 text-center">
+                                        <img :src="embedData.secretPreview" class="image-preview" alt="Secret Preview">
+                                        <p class="mt-2 font-semibold" x-text="embedData.secretFile?.name"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-3 mt-6">
+                                <div class="form-group">
+                                    <label class="form-label">Processing Size</label>
+                                    <select x-model="embedData.imageSize" class="form-select">
+                                        <option value="64">64x64 (Fast)</option>
+                                        <option value="128">128x128 (Balanced)</option>
+                                        <option value="256">256x256 (High Quality)</option>
+                                        <option value="512">512x512 (Ultra Quality)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Model Variant</label>
+                                    <select x-model="embedData.modelVariant" class="form-select">
+                                        <option value="standard">Standard</option>
+                                        <option value="lightweight">Lightweight (Fast)</option>
+                                        <option value="robust">Robust (Secure)</option>
+                                        <option value="adaptive">Adaptive</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quality Priority</label>
+                                    <select x-model="embedData.qualityPriority" class="form-select">
+                                        <option value="balanced">Balanced</option>
+                                        <option value="cover">Cover Quality</option>
+                                        <option value="secret">Secret Recovery</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 text-center">
+                                <button type="submit" class="btn btn-primary" :disabled="!canEmbed || embedData.processing">
+                                    <template x-if="embedData.processing">
+                                        <div class="loading-spinner"></div>
+                                    </template>
+                                    <template x-if="!embedData.processing">
+                                        <i class="fas fa-magic"></i>
+                                    </template>
+                                    <span x-text="embedData.processing ? 'Processing...' : 'Embed Secret Image'"></span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Results -->
+                        <div x-show="embedData.results" class="mt-8 slide-up">
+                            <h3 class="text-xl font-bold mb-4">Processing Results</h3>
+                            
+                            <div class="image-comparison">
+                                <div class="image-card">
+                                    <img :src="embedData.results?.images?.cover" class="image-preview" alt="Original Cover">
+                                    <h4>Original Cover</h4>
+                                </div>
+                                <div class="image-card">
+                                    <img :src="embedData.results?.images?.secret" class="image-preview" alt="Original Secret">
+                                    <h4>Original Secret</h4>
+                                </div>
+                                <div class="image-card">
+                                    <img :src="embedData.results?.images?.stego" class="image-preview" alt="Stego Image">
+                                    <h4>Stego Image</h4>
+                                </div>
+                                <div class="image-card">
+                                    <img :src="embedData.results?.images?.recovered" class="image-preview" alt="Recovered Secret">
+                                    <h4>Recovered Secret</h4>
+                                </div>
+                            </div>
+
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="embedData.results?.metrics?.cover_psnr?.toFixed(2) + ' dB'"></div>
+                                    <div class="metric-label">Cover PSNR</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="embedData.results?.metrics?.cover_ssim?.toFixed(4)"></div>
+                                    <div class="metric-label">Cover SSIM</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="embedData.results?.metrics?.secret_psnr?.toFixed(2) + ' dB'"></div>
+                                    <div class="metric-label">Secret PSNR</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="embedData.results?.metrics?.secret_ssim?.toFixed(4)"></div>
+                                    <div class="metric-label">Secret SSIM</div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-6">
+                                <a :href="embedData.results?.download_links?.stego" class="btn btn-success" download>
+                                    <i class="fas fa-download"></i>
+                                    Download Stego Image
+                                </a>
+                                <a :href="embedData.results?.download_links?.recovered" class="btn btn-secondary ml-3" download>
+                                    <i class="fas fa-download"></i>
+                                    Download Recovered Secret
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Extract Section -->
+            <section class="content-section" :class="{ active: activeSection === 'extract' }">
+                <div class="section-title">
+                    <i class="fas fa-search"></i>
+                    Extract Secret Image
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Extract Hidden Secret from Stego Image</h3>
+                        <p>Upload a steganographic image to reveal the hidden secret image.</p>
+                    </div>
+                    <div class="card-body">
+                        <form @submit.prevent="processExtract()">
+                            <div class="form-group">
+                                <label class="form-label">Stego Image</label>
+                                <div class="upload-area" 
+                                     @dragover.prevent="dragover = true" 
+                                     @dragleave.prevent="dragover = false"
+                                     @drop.prevent="handleDrop($event, 'stego')"
+                                     :class="{ dragover: dragover }"
+                                     @click="$refs.stegoInput.click()">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-search-plus"></i>
+                                    </div>
+                                    <p><strong>Choose Stego Image</strong></p>
+                                    <p class="text-sm" style="color: #6b7280;">Click here or drag and drop</p>
+                                </div>
+                                <input type="file" x-ref="stegoInput" accept="image/*" @change="handleFileSelect($event, 'stego')" style="display: none;">
+                                <div x-show="extractData.stegoPreview" class="mt-4 text-center">
+                                    <img :src="extractData.stegoPreview" class="image-preview" alt="Stego Preview">
+                                    <p class="mt-2 font-semibold" x-text="extractData.stegoFile?.name"></p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-2 mt-6">
+                                <div class="form-group">
+                                    <label class="form-label">Processing Size</label>
+                                    <select x-model="extractData.imageSize" class="form-select">
+                                        <option value="64">64x64 (Fast)</option>
+                                        <option value="128">128x128 (Balanced)</option>
+                                        <option value="256">256x256 (High Quality)</option>
+                                        <option value="512">512x512 (Ultra Quality)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Model Variant</label>
+                                    <select x-model="extractData.modelVariant" class="form-select">
+                                        <option value="standard">Standard</option>
+                                        <option value="lightweight">Lightweight</option>
+                                        <option value="robust">Robust</option>
+                                        <option value="adaptive">Adaptive</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 text-center">
+                                <button type="submit" class="btn btn-primary" :disabled="!extractData.stegoFile || extractData.processing">
+                                    <template x-if="extractData.processing">
+                                        <div class="loading-spinner"></div>
+                                    </template>
+                                    <template x-if="!extractData.processing">
+                                        <i class="fas fa-unlock"></i>
+                                    </template>
+                                    <span x-text="extractData.processing ? 'Extracting...' : 'Extract Secret Image'"></span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Results -->
+                        <div x-show="extractData.results" class="mt-8 slide-up">
+                            <h3 class="text-xl font-bold mb-4">Extraction Results</h3>
+                            
+                            <div class="image-comparison">
+                                <div class="image-card">
+                                    <img :src="extractData.results?.images?.stego" class="image-preview" alt="Stego Image">
+                                    <h4>Stego Image</h4>
+                                </div>
+                                <div class="image-card">
+                                    <img :src="extractData.results?.images?.extracted" class="image-preview" alt="Extracted Secret">
+                                    <h4>Extracted Secret</h4>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-6">
+                                <a :href="extractData.results?.download_links?.extracted" class="btn btn-success" download>
+                                    <i class="fas fa-download"></i>
+                                    Download Extracted Secret
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other sections would continue here... -->
+            <!-- For brevity, I'm including placeholders for the remaining sections -->
+            
+            <!-- Batch Processing Section -->
+            <section class="content-section" :class="{ active: activeSection === 'batch' }">
+                <div class="section-title">
+                    <i class="fas fa-layer-group"></i>
+                    Batch Processing
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-upload"></i> Batch Embed</h3>
+                            <p>Process multiple image pairs simultaneously</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Cover Images Folder</label>
+                                <input type="file" webkitdirectory multiple @change="handleBatchFiles($event, 'covers')" class="form-input">
+                                <p class="text-sm mt-2" style="color: #6b7280;">Select a folder containing cover images</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Secret Images Folder</label>
+                                <input type="file" webkitdirectory multiple @change="handleBatchFiles($event, 'secrets')" class="form-input">
+                                <p class="text-sm mt-2" style="color: #6b7280;">Select a folder containing secret images</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Pairing Strategy</label>
+                                <select x-model="batchData.pairingStrategy" class="form-select">
+                                    <option value="sequential">Sequential (1:1 matching)</option>
+                                    <option value="random">Random pairing</option>
+                                    <option value="all_combinations">All combinations</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Processing Settings</label>
+                                <div class="grid grid-2">
+                                    <select x-model="batchData.imageSize" class="form-select">
+                                        <option value="128">128x128</option>
+                                        <option value="256">256x256</option>
+                                        <option value="512">512x512</option>
+                                    </select>
+                                    <select x-model="batchData.modelVariant" class="form-select">
+                                        <option value="standard">Standard Model</option>
+                                        <option value="lightweight">Lightweight</option>
+                                        <option value="robust">Robust</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button @click="startBatchEmbed()" class="btn btn-primary w-full" :disabled="!canStartBatch">
+                                <i class="fas fa-play"></i>
+                                Start Batch Embed
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-download"></i> Batch Extract</h3>
+                            <p>Extract secrets from multiple stego images</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Stego Images Folder</label>
+                                <input type="file" webkitdirectory multiple @change="handleBatchFiles($event, 'stegos')" class="form-input">
+                                <p class="text-sm mt-2" style="color: #6b7280;">Select a folder containing stego images</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Processing Settings</label>
+                                <div class="grid grid-2">
+                                    <select x-model="batchData.extractImageSize" class="form-select">
+                                        <option value="128">128x128</option>
+                                        <option value="256">256x256</option>
+                                        <option value="512">512x512</option>
+                                    </select>
+                                    <select x-model="batchData.extractModelVariant" class="form-select">
+                                        <option value="standard">Standard Model</option>
+                                        <option value="lightweight">Lightweight</option>
+                                        <option value="robust">Robust</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button @click="startBatchExtract()" class="btn btn-secondary w-full" :disabled="!batchData.stegoFiles.length">
+                                <i class="fas fa-play"></i>
+                                Start Batch Extract
+                            </button>
+                            <div x-show="batchData.stegoFiles.length > 0" class="mt-3">
+                                <p class="text-sm" style="color: #6b7280;">
+                                    <span x-text="batchData.stegoFiles.length"></span> stego images selected
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Queue -->
+                <div x-show="batchData.queue.length > 0" class="batch-queue mt-6">
+                    <h3 class="text-lg font-bold mb-4">
+                        <i class="fas fa-list"></i>
+                        Processing Queue
+                    </h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="`width: ${batchData.progress}%`"></div>
+                    </div>
+                    <p class="text-center mt-2" x-text="`${batchData.completed} of ${batchData.total} completed (${batchData.progress.toFixed(1)}%)`"></p>
+                    
+                    <div class="mt-4">
+                        <template x-for="item in batchData.queue.slice(0, 10)" :key="item.id">
+                            <div class="queue-item">
+                                <div>
+                                    <strong x-text="item.name"></strong>
+                                    <p class="text-sm" style="color: #6b7280;" x-text="item.type"></p>
+                                </div>
+                                <div class="status-badge" :class="`status-${item.status}`" x-text="item.status"></div>
+                            </div>
+                        </template>
+                        
+                        <div x-show="batchData.queue.length > 10" class="text-center mt-3">
+                            <p class="text-sm" style="color: #6b7280;">
+                                ... and <span x-text="batchData.queue.length - 10"></span> more items
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Summary -->
+                <div x-show="batchData.completed > 0 && batchData.queue.length === batchData.completed" class="card mt-6">
+                    <div class="card-header">
+                        <h3><i class="fas fa-check-circle"></i> Batch Complete</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-value" x-text="batchData.completed"></div>
+                                <div class="metric-label">Images Processed</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" x-text="batchData.successful"></div>
+                                <div class="metric-label">Successful</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" x-text="batchData.failed"></div>
+                                <div class="metric-label">Failed</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" x-text="batchData.duration + 's'"></div>
+                                <div class="metric-label">Duration</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button @click="downloadBatchResults()" class="btn btn-success">
+                                <i class="fas fa-download"></i>
+                                Download All Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" :class="{ active: activeSection === 'training' }">
+                <div class="section-title">
+                    <i class="fas fa-brain"></i>
+                    Model Training
+                </div>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cogs"></i> Training Configuration</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Model Architecture</label>
+                                <select x-model="trainingData.architecture" class="form-select">
+                                    <option value="standard">Standard Autoencoder</option>
+                                    <option value="lightweight">Lightweight</option>
+                                    <option value="robust">Robust</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Epochs</label>
+                                    <input type="number" x-model="trainingData.epochs" min="1" max="1000" class="form-input" placeholder="50">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Batch Size</label>
+                                    <select x-model="trainingData.batchSize" class="form-select">
+                                        <option value="16">16</option>
+                                        <option value="32">32</option>
+                                        <option value="64">64</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button @click="startTraining()" class="btn btn-primary w-full" :disabled="trainingData.isTraining">
+                                <i class="fas fa-play"></i>
+                                Start Training
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Training Progress</h3>
+                        </div>
+                        <div class="card-body">
+                            <div x-show="trainingData.isTraining" class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="trainingData.currentEpoch"></div>
+                                    <div class="metric-label">Current Epoch</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" x-text="trainingData.trainLoss?.toFixed(4) || '--'"></div>
+                                    <div class="metric-label">Train Loss</div>
+                                </div>
+                            </div>
+                            <div x-show="!trainingData.isTraining" class="text-center" style="padding: 2rem; color: #6b7280;">
+                                <p>Start training to see progress</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="content-section" :class="{ active: activeSection === 'settings' }">
+                <div class="section-title">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </div>
+                <div class="alert alert-info">
+                    <strong>Settings:</strong> Configure application preferences, model defaults, processing parameters, and system optimization settings.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 9999;"></div>
+
+    <script>
+        function steganographyApp() {
+            return {
+                activeSection: 'dashboard',
+                sidebarOpen: window.innerWidth >= 1024,
+                dragover: false,
+                
+                // Data objects
+                embedData: {
+                    coverFile: null,
+                    secretFile: null,
+                    coverPreview: null,
+                    secretPreview: null,
+                    imageSize: 128,
+                    modelVariant: 'standard',
+                    qualityPriority: 'balanced',
+                    processing: false,
+                    results: null
+                },
+                
+                extractData: {
+                    stegoFile: null,
+                    stegoPreview: null,
+                    imageSize: 128,
+                    modelVariant: 'standard',
+                    processing: false,
+                    results: null
+                },
+                
+                modelInfo: {
+                    loaded: false,
+                    availableModels: [],
+                    device: '',
+                    cudaAvailable: false
+                },
+                
+                stats: {
+                    totalProcessed: 0,
+                    avgPSNR: 0
+                },
+                
+                batchData: {
+                    coverFiles: [],
+                    secretFiles: [],
+                    stegoFiles: [],
+                    pairingStrategy: 'sequential',
+                    imageSize: 128,
+                    modelVariant: 'standard',
+                    extractImageSize: 128,
+                    extractModelVariant: 'standard',
+                    queue: [],
+                    progress: 0,
+                    completed: 0,
+                    total: 0,
+                    successful: 0,
+                    failed: 0,
+                    duration: 0
+                },
+                
+                trainingData: {
+                    architecture: 'standard',
+                    epochs: 50,
+                    batchSize: 32,
+                    learningRate: 0.001,
+                    dataset: 'cifar10',
+                    isTraining: false,
+                    currentEpoch: 0,
+                    trainLoss: null,
+                    valLoss: null
+                },
+                
+                init() {
+                    this.loadModelInfo();
+                    this.setupEventListeners();
+                },
+                
+                // Navigation
+                setActiveSection(section) {
+                    this.activeSection = section;
+                    if (window.innerWidth < 1024) {
+                        this.sidebarOpen = false;
+                    }
+                },
+                
+                getSectionTitle(section) {
+                    const titles = {
+                        dashboard: 'Dashboard',
+                        embed: 'Embed Secret',
+                        extract: 'Extract Secret',
+                        batch: 'Batch Processing',
+                        training: 'Model Training',
+                        settings: 'Settings'
+                    };
+                    return titles[section] || 'SteganoSuite';
+                },
+                
+                // File handling
+                handleFileSelect(event, type) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    if (type === 'cover') {
+                        this.embedData.coverFile = file;
+                        this.embedData.coverPreview = URL.createObjectURL(file);
+                    } else if (type === 'secret') {
+                        this.embedData.secretFile = file;
+                        this.embedData.secretPreview = URL.createObjectURL(file);
+                    } else if (type === 'stego') {
+                        this.extractData.stegoFile = file;
+                        this.extractData.stegoPreview = URL.createObjectURL(file);
+                    }
+                },
+                
+                handleDrop(event, type) {
+                    this.dragover = false;
+                    const files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        const fakeEvent = { target: { files: files } };
+                        this.handleFileSelect(fakeEvent, type);
+                    }
+                },
+                
+                // Processing functions
+                async processEmbed() {
+                    if (!this.canEmbed) return;
+                    
+                    this.embedData.processing = true;
+                    this.embedData.results = null;
+                    
+                    const formData = new FormData();
+                    formData.append('cover_image', this.embedData.coverFile);
+                    formData.append('secret_image', this.embedData.secretFile);
+                    formData.append('image_size', this.embedData.imageSize);
+                    formData.append('model_variant', this.embedData.modelVariant);
+                    formData.append('quality_priority', this.embedData.qualityPriority);
+                    
+                    try {
+                        const response = await fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.embedData.results = result;
+                            this.showAlert('Success! Secret image embedded successfully.', 'success');
+                            this.stats.totalProcessed++;
+                        } else {
+                            this.showAlert('Error: ' + result.error, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Network error: ' + error.message, 'error');
+                    } finally {
+                        this.embedData.processing = false;
+                    }
+                },
+                
+                async processExtract() {
+                    if (!this.extractData.stegoFile) return;
+                    
+                    this.extractData.processing = true;
+                    this.extractData.results = null;
+                    
+                    const formData = new FormData();
+                    formData.append('stego_image', this.extractData.stegoFile);
+                    formData.append('image_size', this.extractData.imageSize);
+                    formData.append('model_variant', this.extractData.modelVariant);
+                    
+                    try {
+                        const response = await fetch('/extract', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.extractData.results = result;
+                            this.showAlert('Success! Secret image extracted successfully.', 'success');
+                        } else {
+                            this.showAlert('Error: ' + result.error, 'error');
+                        }
+                    } catch (error) {
+                        this.showAlert('Network error: ' + error.message, 'error');
+                    } finally {
+                        this.extractData.processing = false;
+                    }
+                },
+                
+                // Batch Processing Functions
+                handleBatchFiles(event, type) {
+                    const files = Array.from(event.target.files);
+                    if (type === 'covers') {
+                        this.batchData.coverFiles = files;
+                        console.log(`Selected ${files.length} cover images`);
+                    } else if (type === 'secrets') {
+                        this.batchData.secretFiles = files;
+                        console.log(`Selected ${files.length} secret images`);
+                    } else if (type === 'stegos') {
+                        this.batchData.stegoFiles = files;
+                        console.log(`Selected ${files.length} stego images`);
+                    }
+                },
+                
+                async startBatchEmbed() {
+                    if (!this.canStartBatch) return;
+                    
+                    this.showAlert('Starting batch embedding process...', 'info');
+                    
+                    // Create processing queue (simplified simulation)
+                    const pairs = this.createImagePairs();
+                    this.batchData.queue = pairs.map((pair, index) => ({
+                        id: index,
+                        name: `${pair.cover.name} + ${pair.secret.name}`,
+                        type: 'embed',
+                        status: 'pending'
+                    }));
+                    
+                    this.batchData.total = this.batchData.queue.length;
+                    this.batchData.completed = 0;
+                    this.batchData.successful = 0;
+                    this.batchData.failed = 0;
+                    this.batchData.progress = 0;
+                    
+                    // Simulate batch processing
+                    for (let i = 0; i < this.batchData.queue.length; i++) {
+                        this.batchData.queue[i].status = 'processing';
+                        
+                        // Simulate processing time
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Simulate success/failure (90% success rate)
+                        if (Math.random() > 0.1) {
+                            this.batchData.queue[i].status = 'completed';
+                            this.batchData.successful++;
+                        } else {
+                            this.batchData.queue[i].status = 'error';
+                            this.batchData.failed++;
+                        }
+                        
+                        this.batchData.completed++;
+                        this.batchData.progress = (this.batchData.completed / this.batchData.total) * 100;
+                    }
+                    
+                    this.showAlert(`Batch processing completed! ${this.batchData.successful} successful, ${this.batchData.failed} failed.`, 'success');
+                },
+                
+                async startBatchExtract() {
+                    if (!this.batchData.stegoFiles.length) return;
+                    
+                    this.showAlert('Starting batch extraction process...', 'info');
+                    // Similar implementation to startBatchEmbed but for extraction
+                },
+                
+                createImagePairs() {
+                    const pairs = [];
+                    const strategy = this.batchData.pairingStrategy;
+                    
+                    if (strategy === 'sequential') {
+                        const minLength = Math.min(this.batchData.coverFiles.length, this.batchData.secretFiles.length);
+                        for (let i = 0; i < minLength; i++) {
+                            pairs.push({
+                                cover: this.batchData.coverFiles[i],
+                                secret: this.batchData.secretFiles[i]
+                            });
+                        }
+                    }
+                    // Add other strategies as needed
+                    
+                    return pairs;
+                },
+                
+                // Training Functions
+                async startTraining() {
+                    if (this.trainingData.isTraining) return;
+                    
+                    this.trainingData.isTraining = true;
+                    this.trainingData.currentEpoch = 0;
+                    this.trainingData.trainLoss = null;
+                    this.trainingData.valLoss = null;
+                    
+                    this.showAlert('Starting model training...', 'info');
+                    
+                    // Simulate training progress
+                    const interval = setInterval(() => {
+                        this.trainingData.currentEpoch++;
+                        this.trainingData.trainLoss = Math.random() * 0.1 + 0.05;
+                        this.trainingData.valLoss = Math.random() * 0.1 + 0.08;
+                        
+                        if (this.trainingData.currentEpoch >= this.trainingData.epochs) {
+                            clearInterval(interval);
+                            this.trainingData.isTraining = false;
+                            this.showAlert('Training completed successfully!', 'success');
+                        }
+                    }, 1000);
+                },
+                
+                async loadModelInfo() {
+                    try {
+                        const response = await fetch('/model_info');
+                        const data = await response.json();
+                        
+                        if (!data.error) {
+                            this.modelInfo = {
+                                loaded: true,
+                                availableModels: data.available_models || [],
+                                device: data.device,
+                                cudaAvailable: data.device_info?.cuda_available || false
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Failed to load model info:', error);
+                    }
+                },
+                
+                showAlert(message, type = 'success') {
+                    const alertContainer = document.getElementById('alert-container');
+                    const alert = document.createElement('div');
+                    alert.className = `alert alert-${type} bounce-in`;
+                    alert.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${message}</span>
+                            <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; margin-left: 1rem;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    alertContainer.appendChild(alert);
+                    
+                    // Auto-remove after 5 seconds
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 5000);
+                },
+                
+                setupEventListeners() {
+                    // Window resize handler
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth >= 1024) {
+                            this.sidebarOpen = true;
+                        } else {
+                            this.sidebarOpen = false;
+                        }
+                    });
+                    
+                    // Keyboard shortcuts
+                    document.addEventListener('keydown', (e) => {
+                        if (e.ctrlKey || e.metaKey) {
+                            switch (e.key) {
+                                case '1':
+                                    e.preventDefault();
+                                    this.setActiveSection('dashboard');
+                                    break;
+                                case '2':
+                                    e.preventDefault();
+                                    this.setActiveSection('embed');
+                                    break;
+                                case '3':
+                                    e.preventDefault();
+                                    this.setActiveSection('extract');
+                                    break;
+                            }
+                        }
+                    });
+                },
+                
+                // Computed properties
+                get canEmbed() {
+                    return this.embedData.coverFile && this.embedData.secretFile && !this.embedData.processing;
+                },
+                
+                get canStartBatch() {
+                    return this.batchData.coverFiles.length > 0 && this.batchData.secretFiles.length > 0;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

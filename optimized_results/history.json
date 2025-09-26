@@ -1,9 +1,0 @@
-{
-  "history": {
-    "train_loss": [],
-    "val_loss": []
-  },
-  "best_metrics": {},
-  "epoch_times": [],
-  "total_training_time": 34.27985429763794
-}

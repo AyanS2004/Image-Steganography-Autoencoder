@@ -1,7 +1,0 @@
-# Minimal requirements that work with current NumPy versions
-numpy>=1.21.0,<2.0.0
-Pillow>=8.3.0
-matplotlib>=3.5.0
-flask>=2.3.0
-requests>=2.28.0
-scikit-image>=0.19.0
